@@ -49,6 +49,9 @@ cd frontend
 # Install dependencies
 npm install
 
+# Create .env file (copy from .env.example)
+cp .env.example .env
+
 # Start development server
 npm run dev
 ```
@@ -75,7 +78,7 @@ This project is configured to deploy to Vercel as a single application. The `ver
 
 1. Push your code to a Git repository
 2. Connect the repository to Vercel
-3. Configure environment variables in Vercel dashboard (DATABASE_URL, etc.)
+3. Configure environment variables in Vercel dashboard (DATABASE_URL, VITE_API_URL, etc.)
 4. Deploy
 
 ## Environment Variables
@@ -84,6 +87,10 @@ This project is configured to deploy to Vercel as a single application. The `ver
 
 - `DATABASE_URL` - PostgreSQL connection string
 - `PORT` - Port for the backend server (default: 3001)
+
+### Frontend
+
+- `VITE_API_URL` - URL of the backend API (default: http://localhost:3001)
 
 ## License
 

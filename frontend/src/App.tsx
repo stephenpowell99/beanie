@@ -18,7 +18,9 @@ function App() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:3001/api/users");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/users`
+        );
         setUsers(response.data);
         setError(null);
       } catch (err) {
