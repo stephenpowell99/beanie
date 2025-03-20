@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Button } from "../components/ui/button";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Sparkles,
   BarChart3,
@@ -10,10 +10,14 @@ import {
   X,
   User,
 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const HomePage = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -57,19 +61,49 @@ const HomePage = () => {
                 Pricing
               </a>
               <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="font-medium transition-all duration-200 hover:scale-105"
-                >
-                  Log In
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
-                >
-                  Register
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <span className="text-gray-600 font-medium">
+                      Welcome, {user?.name || user?.email}
+                    </span>
+                    <Link to="/dashboard">
+                      <Button
+                        size="sm"
+                        className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
+                      >
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="font-medium"
+                      onClick={logout}
+                    >
+                      Log Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth/login">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="font-medium transition-all duration-200 hover:scale-105"
+                      >
+                        Log In
+                      </Button>
+                    </Link>
+                    <Link to="/auth/register">
+                      <Button
+                        size="sm"
+                        className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
+                      >
+                        Register
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
 
@@ -109,20 +143,51 @@ const HomePage = () => {
               Pricing
             </a>
             <div className="flex flex-col space-y-2 pt-2 border-t border-gray-100">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="font-medium justify-start transition-all duration-200 hover:pl-3"
-              >
-                <User size={16} className="mr-2" />
-                Log In
-              </Button>
-              <Button
-                size="sm"
-                className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:shadow-md"
-              >
-                Register
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-gray-600 font-medium px-2 py-1">
+                    Welcome, {user?.name || user?.email}
+                  </span>
+                  <Link to="/dashboard">
+                    <Button
+                      size="sm"
+                      className="font-medium w-full justify-start bg-gray-800 hover:bg-gray-700"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-medium justify-start"
+                    onClick={logout}
+                  >
+                    <User size={16} className="mr-2" />
+                    Log Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth/login">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="font-medium justify-start transition-all duration-200 hover:pl-3 w-full text-left"
+                    >
+                      <User size={16} className="mr-2" />
+                      Log In
+                    </Button>
+                  </Link>
+                  <Link to="/auth/register">
+                    <Button
+                      size="sm"
+                      className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:shadow-md w-full"
+                    >
+                      Register
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>
@@ -149,21 +214,41 @@ const HomePage = () => {
                 conversational prompts — no coding or complex setup required.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button
-                  className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-6 rounded-lg text-lg font-medium"
-                  onMouseEnter={() => setIsHovering(true)}
-                  onMouseLeave={() => setIsHovering(false)}
-                >
-                  <span className="flex items-center">
-                    Get Started
-                    <ArrowRight
-                      size={18}
-                      className={`ml-2 transition-transform duration-300 ${
-                        isHovering ? "translate-x-1" : ""
-                      }`}
-                    />
-                  </span>
-                </Button>
+                {isAuthenticated ? (
+                  <Button
+                    className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-6 rounded-lg text-lg font-medium"
+                    onClick={() => navigate("/dashboard")}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                  >
+                    <span className="flex items-center">
+                      Go to Dashboard
+                      <ArrowRight
+                        size={18}
+                        className={`ml-2 transition-transform duration-300 ${
+                          isHovering ? "translate-x-1" : ""
+                        }`}
+                      />
+                    </span>
+                  </Button>
+                ) : (
+                  <Button
+                    className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-6 rounded-lg text-lg font-medium"
+                    onClick={() => navigate("/auth/register")}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                  >
+                    <span className="flex items-center">
+                      Get Started
+                      <ArrowRight
+                        size={18}
+                        className={`ml-2 transition-transform duration-300 ${
+                          isHovering ? "translate-x-1" : ""
+                        }`}
+                      />
+                    </span>
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="border-gray-300 text-gray-700 hover:bg-gray-100 px-6 py-6 rounded-lg text-lg font-medium"
