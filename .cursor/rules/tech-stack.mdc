@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Tech stack
+
+- react.js for front
+- node.js for backend using typescript
+- an orm that supports typescript
+- postgresql for database
+- shadcn for the ui component library
+- use tailwindcss for styling combined with shadcn
+
