@@ -20,26 +20,52 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Get CORS allowed origins from environment variable or default to an array
+const getAllowedOrigins = (): string[] => {
+  const originsFromEnv = process.env.CORS_ORIGINS;
+  const defaultOrigins = [
+    'https://beanie-six.vercel.app',
+    'https://beanie.vercel.app',
+    'http://localhost:5173',  // Vite default port
+    'http://localhost:3000',  // Another common frontend port
+  ];
+
+  if (originsFromEnv) {
+    return originsFromEnv.split(',');
+  }
+  
+  return defaultOrigins;
+};
+
 // CORS configuration
-const allowedOrigins = [
-  'https://beanie-six.vercel.app',
-  'http://localhost:5173',  // Vite default port
-  'http://localhost:3000',  // Another common frontend port
-];
+const allowedOrigins = getAllowedOrigins();
+
+console.log('CORS allowed origins:', allowedOrigins);
+console.log('Current NODE_ENV:', process.env.NODE_ENV);
+console.log('Frontend URL:', process.env.FRONTEND_URL);
 
 // CORS middleware
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
-    if (!origin) return callback(null, true);
+    console.log('Request origin:', origin);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) {
+      console.log('No origin, allowing request');
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      console.log('Origin allowed by CORS:', origin);
       callback(null, true);
     } else {
+      console.log('Origin rejected by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parsers

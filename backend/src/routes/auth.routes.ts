@@ -15,11 +15,24 @@ router.post('/login', login as unknown as RequestHandler);
 if (config.google.clientID && config.google.clientSecret) {
   router.get(
     '/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
+    (req, res, next) => {
+      const state = req.query.state as string;
+      const authOptions = { 
+        scope: ['profile', 'email'],
+        state: state || undefined
+      };
+      passport.authenticate('google', authOptions)(req, res, next);
+    }
   );
+  
   router.get(
     '/google/callback',
-    passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+    passport.authenticate('google', { 
+      session: false, 
+      failureRedirect: '/login',
+      // Pass through the state parameter
+      passReqToCallback: true 
+    }),
     googleCallback as unknown as RequestHandler
   );
 }
@@ -28,13 +41,24 @@ if (config.google.clientID && config.google.clientSecret) {
 if (config.microsoft.clientID && config.microsoft.clientSecret) {
   router.get(
     '/microsoft',
-    passport.authenticate('microsoft', { 
-      scope: ['user.read'] 
-    })
+    (req, res, next) => {
+      const state = req.query.state as string;
+      const authOptions = { 
+        scope: ['user.read'],
+        state: state || undefined
+      };
+      passport.authenticate('microsoft', authOptions)(req, res, next);
+    }
   );
+  
   router.get(
     '/microsoft/callback',
-    passport.authenticate('microsoft', { session: false, failureRedirect: '/login' }),
+    passport.authenticate('microsoft', { 
+      session: false, 
+      failureRedirect: '/login',
+      // Pass through the state parameter
+      passReqToCallback: true 
+    }),
     microsoftCallback as unknown as RequestHandler
   );
 }

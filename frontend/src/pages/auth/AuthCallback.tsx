@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
@@ -21,10 +21,16 @@ const AuthCallback = () => {
 
         // Store token
         localStorage.setItem("token", token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        // Redirect to dashboard
-        navigate("/dashboard");
+        // Verify the token by making a request to the backend
+        try {
+          await api.get("/api/auth/me");
+          // Redirect to dashboard
+          navigate("/dashboard");
+        } catch (verifyError) {
+          console.error("Token verification failed:", verifyError);
+          throw new Error("Authentication verification failed");
+        }
       } catch (err: any) {
         console.error("Auth callback error:", err);
         setError(err.message || "Authentication failed");

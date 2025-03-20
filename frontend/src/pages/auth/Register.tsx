@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
+import api from "@/services/api";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -42,6 +43,7 @@ const Register = () => {
       await register(email, password, name);
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("Registration error:", error);
       setErrorMessage(
         error.response?.data?.message ||
           "Registration failed. Please try again."
@@ -49,6 +51,14 @@ const Register = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleOAuthLogin = (provider: string) => {
+    // Create a state parameter with the current origin
+    const state = window.location.origin;
+    window.location.href = `${
+      import.meta.env.VITE_API_URL
+    }/api/auth/${provider}?state=${encodeURIComponent(state)}`;
   };
 
   return (
@@ -60,6 +70,10 @@ const Register = () => {
               src="/beanie-logo.svg"
               alt="Beanie Logo"
               className="h-12 w-auto"
+              onError={(e) => {
+                e.currentTarget.src =
+                  "https://placehold.co/120x40/f8fafc/475569?text=beanie.ai";
+              }}
             />
           </Link>
         </div>
@@ -176,11 +190,7 @@ const Register = () => {
               <button
                 type="button"
                 className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={() =>
-                  (window.location.href = `${
-                    import.meta.env.VITE_API_URL
-                  }/api/auth/google`)
-                }
+                onClick={() => handleOAuthLogin("google")}
               >
                 <img
                   src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -193,11 +203,7 @@ const Register = () => {
               <button
                 type="button"
                 className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={() =>
-                  (window.location.href = `${
-                    import.meta.env.VITE_API_URL
-                  }/api/auth/microsoft`)
-                }
+                onClick={() => handleOAuthLogin("microsoft")}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

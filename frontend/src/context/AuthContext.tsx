@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import api from "../services/api";
 
 interface User {
   id: number;
@@ -51,9 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
             // Get current user
-            const response = await axios.get(
-              `${import.meta.env.VITE_API_URL}/api/auth/me`
-            );
+            const response = await api.get("/api/auth/me");
             setUser(response.data.user);
           }
         }
@@ -72,20 +71,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     setError(null);
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        {
-          email,
-          password,
-        }
-      );
+      const response = await api.post("/api/auth/login", {
+        email,
+        password,
+      });
 
       const { token, user } = response.data;
 
       // Store token and set user
       localStorage.setItem("token", token);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setUser(user);
+
+      return user;
     } catch (err: any) {
       setError(
         err.response?.data?.message || "Login failed. Please try again."
@@ -97,22 +94,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, name: string) => {
     setError(null);
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/register`,
-        {
-          email,
-          password,
-          name,
-        }
-      );
+      const response = await api.post("/api/auth/register", {
+        email,
+        password,
+        name,
+      });
 
       const { token, user } = response.data;
 
       // Store token and set user
       localStorage.setItem("token", token);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setUser(user);
+
+      return user;
     } catch (err: any) {
+      console.error("Registration error:", err);
       setError(
         err.response?.data?.message || "Registration failed. Please try again."
       );
