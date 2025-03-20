@@ -6,6 +6,9 @@
         "use": "@vercel/node"
       }
     ],
+    "scripts": {
+        "build": "npm run build"
+    },    
     "routes": [
       {
         "src": "/(.*)",
