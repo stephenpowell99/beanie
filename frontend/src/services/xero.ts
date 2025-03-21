@@ -54,3 +54,14 @@ export const getXeroMonthlyFinancials = async () => {
     throw error;
   }
 };
+
+// Get top 5 customers by invoice amount
+export const getTopInvoicedCustomers = async () => {
+  try {
+    const response = await api.get('/api/xero/top-invoiced-customers');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting top invoiced customers:', error);
+    throw error;
+  }
+};

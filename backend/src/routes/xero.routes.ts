@@ -6,7 +6,8 @@ import {
   handleXeroCallback,
   disconnectXero,
   getXeroCustomers,
-  getXeroMonthlyFinancials
+  getXeroMonthlyFinancials,
+  getTopInvoicedCustomers
 } from '../controllers/xero.controller';
 
 // Use any type to bypass TypeScript errors
@@ -29,5 +30,8 @@ router.get('/customers', authenticate, getXeroCustomers);
 
 // Get Xero monthly financial data
 router.get('/monthly-financials', authenticate, getXeroMonthlyFinancials);
+
+// Get top 5 customers by invoice amount
+router.get('/top-invoiced-customers', authenticate, getTopInvoicedCustomers);
 
 export default router;

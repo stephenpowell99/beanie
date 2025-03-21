@@ -10,6 +10,7 @@ import {
   disconnectXero,
 } from "@/services/xero";
 import XeroFinancialChart from "@/components/XeroFinancialChart";
+import TopInvoicedCustomers from "@/components/TopInvoicedCustomers";
 import {
   BarChart3,
   Home,
@@ -57,9 +58,18 @@ const Dashboard = () => {
           setIsLoadingCustomers(true);
           try {
             const customersData = await getXeroCustomers();
-            if (customersData && customersData.Contacts) {
-              setXeroCustomers(customersData.Contacts);
+            console.log("Xero customers data received:", customersData);
+
+            if (!customersData.Contacts) {
+              console.error(
+                "Error: Contacts array not found in response:",
+                customersData
+              );
+            } else {
+              console.log(`Found ${customersData.Contacts.length} customers`);
             }
+
+            setXeroCustomers(customersData.Contacts || []);
           } catch (error) {
             console.error("Error fetching Xero customers:", error);
           } finally {
@@ -509,44 +519,52 @@ const Dashboard = () => {
                     </div>
                   ) : xeroCustomers.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {xeroCustomers.slice(0, 6).map((customer: any) => (
-                        <Card
-                          key={customer.ContactID}
-                          className="hover:shadow-md transition-shadow"
-                        >
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center">
-                              <Users className="h-5 w-5 mr-2 text-blue-600" />
-                              {customer.Name}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-sm text-gray-500">
-                              {customer.EmailAddress && (
-                                <div className="mb-1">
-                                  Email: {customer.EmailAddress}
-                                </div>
-                              )}
-                              {customer.Phones &&
-                                customer.Phones.length > 0 &&
-                                customer.Phones[0].PhoneNumber && (
+                      {xeroCustomers.slice(0, 6).map((customer: any) => {
+                        console.log("Customer object:", customer);
+                        console.log("Customer name property:", customer.Name);
+                        console.log(
+                          "Available properties:",
+                          Object.keys(customer)
+                        );
+                        return (
+                          <Card
+                            key={customer.ContactID}
+                            className="hover:shadow-md transition-shadow"
+                          >
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-lg flex items-center">
+                                <Users className="h-5 w-5 mr-2 text-blue-600" />
+                                {customer.Name}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-sm text-gray-500">
+                                {customer.EmailAddress && (
                                   <div className="mb-1">
-                                    Phone: {customer.Phones[0].PhoneNumber}
+                                    Email: {customer.EmailAddress}
                                   </div>
                                 )}
-                              {customer.Addresses &&
-                                customer.Addresses.length > 0 && (
-                                  <div className="mb-1">
-                                    {customer.Addresses[0].City}
-                                    {customer.Addresses[0].Region
-                                      ? `, ${customer.Addresses[0].Region}`
-                                      : ""}
-                                  </div>
-                                )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                                {customer.Phones &&
+                                  customer.Phones.length > 0 &&
+                                  customer.Phones[0].PhoneNumber && (
+                                    <div className="mb-1">
+                                      Phone: {customer.Phones[0].PhoneNumber}
+                                    </div>
+                                  )}
+                                {customer.Addresses &&
+                                  customer.Addresses.length > 0 && (
+                                    <div className="mb-1">
+                                      {customer.Addresses[0].City}
+                                      {customer.Addresses[0].Region
+                                        ? `, ${customer.Addresses[0].Region}`
+                                        : ""}
+                                    </div>
+                                  )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   ) : (
                     <Card className="bg-gray-50">
@@ -566,6 +584,9 @@ const Dashboard = () => {
 
               {/* Xero Financial Chart - Only shown when connected to Xero */}
               {xeroConnected && <XeroFinancialChart />}
+
+              {/* Top Invoiced Customers - Only shown when connected to Xero */}
+              {xeroConnected && <TopInvoicedCustomers />}
             </div>
           </div>
         </main>
