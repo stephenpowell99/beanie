@@ -43,3 +43,14 @@ export const getXeroCustomers = async () => {
     throw error;
   }
 };
+
+// Get Xero monthly financial data
+export const getXeroMonthlyFinancials = async () => {
+  try {
+    const response = await api.get('/api/xero/monthly-financials');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting Xero monthly financials:', error);
+    throw error;
+  }
+};

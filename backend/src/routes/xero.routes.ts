@@ -5,7 +5,8 @@ import {
   initiateXeroAuth,
   handleXeroCallback,
   disconnectXero,
-  getXeroCustomers
+  getXeroCustomers,
+  getXeroMonthlyFinancials
 } from '../controllers/xero.controller';
 
 // Use any type to bypass TypeScript errors
@@ -25,5 +26,8 @@ router.delete('/disconnect', authenticate, disconnectXero);
 
 // Get Xero customers
 router.get('/customers', authenticate, getXeroCustomers);
+
+// Get Xero monthly financial data
+router.get('/monthly-financials', authenticate, getXeroMonthlyFinancials);
 
 export default router;

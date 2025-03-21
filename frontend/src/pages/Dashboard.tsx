@@ -9,6 +9,7 @@ import {
   getXeroCustomers,
   disconnectXero,
 } from "@/services/xero";
+import XeroFinancialChart from "@/components/XeroFinancialChart";
 import {
   BarChart3,
   Home,
@@ -562,6 +563,9 @@ const Dashboard = () => {
                   )}
                 </div>
               )}
+
+              {/* Xero Financial Chart - Only shown when connected to Xero */}
+              {xeroConnected && <XeroFinancialChart />}
             </div>
           </div>
         </main>

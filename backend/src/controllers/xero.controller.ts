@@ -341,3 +341,197 @@ export const getXeroCustomers = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 };
+
+// Define interface for Xero report rows
+interface XeroReportRow {
+  RowType?: string;
+  Title?: string;
+  Cells?: Array<{
+    Value?: string | number;
+    Attributes?: Record<string, string>;
+  }>;
+  Rows?: XeroReportRow[];
+}
+
+// Get Xero Monthly Financial Data
+export const getXeroMonthlyFinancials = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as User | undefined;
+    const userId = user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Get Xero account for this user
+    const xeroAccount = await prisma.account.findFirst({
+      where: {
+        userId: userId,
+        provider: 'xero',
+      },
+    });
+
+    if (!xeroAccount) {
+      return res.status(404).json({ message: 'No Xero connection found' });
+    }
+
+    // Check if token is expired
+    const now = Math.floor(Date.now() / 1000);
+    if (xeroAccount.expires_at && xeroAccount.expires_at < now) {
+      // Token is expired, need to refresh
+      try {
+        // Refresh token
+        const tokenResponse = await axios.post('https://identity.xero.com/connect/token', 
+          new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: xeroAccount.refresh_token as string,
+          }).toString(),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Basic ${Buffer.from(`${XERO_CLIENT_ID}:${XERO_CLIENT_SECRET}`).toString('base64')}`,
+            },
+          }
+        );
+        
+        const { 
+          access_token, 
+          refresh_token, 
+          expires_in
+        } = tokenResponse.data;
+        
+        // Calculate new expiration
+        const expiresAt = Math.floor(Date.now() / 1000) + expires_in;
+        
+        // Update tokens in database
+        await prisma.account.update({
+          where: {
+            id: xeroAccount.id,
+          },
+          data: {
+            access_token,
+            refresh_token,
+            expires_at: expiresAt,
+          },
+        });
+        
+        // Use new access token
+        xeroAccount.access_token = access_token;
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+        return res.status(401).json({ message: 'Xero authentication expired' });
+      }
+    }
+
+    // Get list of tenants (organizations)
+    const tenantsResponse = await axios.get('https://api.xero.com/connections', {
+      headers: {
+        'Authorization': `Bearer ${xeroAccount.access_token}`,
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!tenantsResponse.data || tenantsResponse.data.length === 0) {
+      return res.status(404).json({ message: 'No Xero organizations found' });
+    }
+
+    // Use first tenant ID (most applications just use the first organization)
+    const tenantId = tenantsResponse.data[0].tenantId;
+    
+    // Get the start date (12 months ago from today)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setFullYear(endDate.getFullYear() - 1);
+    
+    // Format dates as required by Xero API (YYYY-MM-DD)
+    const formattedStartDate = startDate.toISOString().split('T')[0];
+    const formattedEndDate = endDate.toISOString().split('T')[0];
+
+    // Get profit and loss from Xero API for the last 12 months
+    const profitLossResponse = await axios.get(
+      `https://api.xero.com/api.xro/2.0/Reports/ProfitAndLoss`, {
+        headers: {
+          'Authorization': `Bearer ${xeroAccount.access_token}`,
+          'Accept': 'application/json',
+          'Xero-Tenant-Id': tenantId,
+        },
+        params: {
+          fromDate: formattedStartDate,
+          toDate: formattedEndDate,
+          periods: '12',
+          timeframe: 'MONTH',
+        },
+      }
+    );
+    
+    // Process the profit and loss data
+    const reportData = profitLossResponse.data;
+    
+    // Extract revenue, expenses, and gross profit by month
+    const months = [];
+    const revenue = [];
+    const expenses = [];
+    const grossProfit = [];
+    
+    if (reportData && reportData.Reports && reportData.Reports.length > 0) {
+      const report = reportData.Reports[0];
+      
+      // Extract column headers (months)
+      if (report.Rows && report.Rows.length > 0) {
+        // Find the rows containing the data we need
+        const revenueRow = report.Rows.find((row: XeroReportRow) => row.Title === 'Revenue' || row.Title === 'Income');
+        const expensesRow = report.Rows.find((row: XeroReportRow) => row.Title === 'Expenses' || row.Title === 'Total Expenses');
+        const grossProfitRow = report.Rows.find((row: XeroReportRow) => row.Title === 'Gross Profit');
+        
+        // Get the month names from the column headers
+        const headerRow = report.Rows[0];
+        if (headerRow && headerRow.Cells) {
+          for (let i = 1; i < headerRow.Cells.length - 1; i++) { // Skip first (title) and last (total) columns
+            if (headerRow.Cells[i].Value) {
+              months.push(headerRow.Cells[i].Value);
+            }
+          }
+        }
+        
+        // Extract data for revenue
+        if (revenueRow && revenueRow.Cells) {
+          for (let i = 1; i < revenueRow.Cells.length - 1; i++) { // Skip first (title) and last (total) columns
+            const value = parseFloat(revenueRow.Cells[i].Value?.toString().replace(/[^0-9.-]+/g, '') || '0');
+            revenue.push(value);
+          }
+        }
+        
+        // Extract data for expenses (as positive values for graphing)
+        if (expensesRow && expensesRow.Cells) {
+          for (let i = 1; i < expensesRow.Cells.length - 1; i++) { // Skip first (title) and last (total) columns
+            // Convert expenses to positive values for visualization
+            const value = parseFloat(expensesRow.Cells[i].Value?.toString().replace(/[^0-9.-]+/g, '') || '0');
+            expenses.push(Math.abs(value));
+          }
+        }
+        
+        // Extract data for gross profit
+        if (grossProfitRow && grossProfitRow.Cells) {
+          for (let i = 1; i < grossProfitRow.Cells.length - 1; i++) { // Skip first (title) and last (total) columns
+            const value = parseFloat(grossProfitRow.Cells[i].Value?.toString().replace(/[^0-9.-]+/g, '') || '0');
+            grossProfit.push(value);
+          }
+        }
+      }
+    }
+    
+    // Return formatted financial data
+    return res.status(200).json({
+      months,
+      revenue,
+      expenses,
+      grossProfit
+    });
+  } catch (error) {
+    console.error('Error getting Xero monthly financials:', error);
+    return res.status(500).json({ 
+      message: 'Internal server error', 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+};
