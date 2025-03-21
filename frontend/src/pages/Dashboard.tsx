@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { checkXeroConnection, initiateXeroAuth } from "@/services/xero";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  checkXeroConnection,
+  initiateXeroAuth,
+  getXeroCustomers,
+  disconnectXero,
+} from "@/services/xero";
 import {
   BarChart3,
   Home,
@@ -13,6 +19,9 @@ import {
   ChevronDown,
   Menu as MenuIcon,
   X,
+  Users,
+  Loader2,
+  Unlink,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -22,6 +31,9 @@ const Dashboard = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [xeroConnected, setXeroConnected] = useState(false);
   const [xeroLoading, setXeroLoading] = useState(true);
+  const [xeroCustomers, setXeroCustomers] = useState([]);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+  const [disconnectingXero, setDisconnectingXero] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -30,7 +42,7 @@ const Dashboard = () => {
     }
   }, [user, isLoading, navigate]);
 
-  // Check Xero connection
+  // Check Xero connection and load customers if connected
   useEffect(() => {
     const checkXero = async () => {
       if (!user) return;
@@ -39,6 +51,20 @@ const Dashboard = () => {
         setXeroLoading(true);
         const { connected } = await checkXeroConnection();
         setXeroConnected(connected);
+
+        if (connected) {
+          setIsLoadingCustomers(true);
+          try {
+            const customersData = await getXeroCustomers();
+            if (customersData && customersData.Contacts) {
+              setXeroCustomers(customersData.Contacts);
+            }
+          } catch (error) {
+            console.error("Error fetching Xero customers:", error);
+          } finally {
+            setIsLoadingCustomers(false);
+          }
+        }
       } catch (error) {
         console.error("Error checking Xero connection:", error);
       } finally {
@@ -63,6 +89,19 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Error connecting to Xero:", error);
+    }
+  };
+
+  const handleDisconnectXero = async () => {
+    try {
+      setDisconnectingXero(true);
+      await disconnectXero();
+      setXeroConnected(false);
+      setXeroCustomers([]);
+    } catch (error) {
+      console.error("Error disconnecting from Xero:", error);
+    } finally {
+      setDisconnectingXero(false);
     }
   };
 
@@ -343,14 +382,31 @@ const Dashboard = () => {
                         </svg>
                         Connected to Xero
                       </p>
-                      <Button
-                        variant="outline"
-                        className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
-                        onClick={() => navigate("/dashboard/reports")}
-                      >
-                        <FileText size={16} className="mr-2" />
-                        View Financial Reports
-                      </Button>
+                      <div className="flex flex-col space-y-2 mt-3">
+                        <Button
+                          variant="outline"
+                          className="w-full text-green-700 border-green-200 hover:bg-green-100"
+                          onClick={() => navigate("/dashboard/reports")}
+                        >
+                          <FileText size={16} className="mr-2" />
+                          View Financial Reports
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full text-red-700 border-red-200 hover:bg-red-100"
+                          onClick={handleDisconnectXero}
+                          disabled={disconnectingXero}
+                        >
+                          {disconnectingXero ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Unlink size={16} className="mr-2" />
+                          )}
+                          {disconnectingXero
+                            ? "Disconnecting..."
+                            : "Disconnect Xero"}
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div>
@@ -432,6 +488,80 @@ const Dashboard = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Xero Customers Section - Only shown when connected to Xero */}
+              {xeroConnected && (
+                <div className="mt-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                      <Users className="h-5 w-5 mr-2 text-blue-600" />
+                      Your Xero Customers
+                    </h2>
+                  </div>
+
+                  {isLoadingCustomers ? (
+                    <div className="flex justify-center py-10">
+                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                      <span className="ml-2 text-gray-500">
+                        Loading customers...
+                      </span>
+                    </div>
+                  ) : xeroCustomers.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {xeroCustomers.slice(0, 6).map((customer: any) => (
+                        <Card
+                          key={customer.ContactID}
+                          className="hover:shadow-md transition-shadow"
+                        >
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-lg flex items-center">
+                              <Users className="h-5 w-5 mr-2 text-blue-600" />
+                              {customer.Name}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-sm text-gray-500">
+                              {customer.EmailAddress && (
+                                <div className="mb-1">
+                                  Email: {customer.EmailAddress}
+                                </div>
+                              )}
+                              {customer.Phones &&
+                                customer.Phones.length > 0 &&
+                                customer.Phones[0].PhoneNumber && (
+                                  <div className="mb-1">
+                                    Phone: {customer.Phones[0].PhoneNumber}
+                                  </div>
+                                )}
+                              {customer.Addresses &&
+                                customer.Addresses.length > 0 && (
+                                  <div className="mb-1">
+                                    {customer.Addresses[0].City}
+                                    {customer.Addresses[0].Region
+                                      ? `, ${customer.Addresses[0].Region}`
+                                      : ""}
+                                  </div>
+                                )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="bg-gray-50">
+                      <CardContent className="flex flex-col items-center justify-center py-10">
+                        <Users className="h-12 w-12 text-gray-400 mb-4" />
+                        <p className="text-gray-600 text-center mb-2">
+                          No customers found in your Xero account
+                        </p>
+                        <p className="text-gray-500 text-sm text-center">
+                          Add customers in Xero to see them here
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </main>

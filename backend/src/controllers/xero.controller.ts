@@ -239,3 +239,105 @@ export const disconnectXero = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+// Get Xero Customers
+export const getXeroCustomers = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as User | undefined;
+    const userId = user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Get Xero account for this user
+    const xeroAccount = await prisma.account.findFirst({
+      where: {
+        userId: userId,
+        provider: 'xero',
+      },
+    });
+
+    if (!xeroAccount) {
+      return res.status(404).json({ message: 'No Xero connection found' });
+    }
+
+    // Check if token is expired
+    const now = Math.floor(Date.now() / 1000);
+    if (xeroAccount.expires_at && xeroAccount.expires_at < now) {
+      // Token is expired, need to refresh
+      try {
+        // Refresh token
+        const tokenResponse = await axios.post('https://identity.xero.com/connect/token', 
+          new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: xeroAccount.refresh_token as string,
+          }).toString(),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Basic ${Buffer.from(`${XERO_CLIENT_ID}:${XERO_CLIENT_SECRET}`).toString('base64')}`,
+            },
+          }
+        );
+        
+        const { 
+          access_token, 
+          refresh_token, 
+          expires_in
+        } = tokenResponse.data;
+        
+        // Calculate new expiration
+        const expiresAt = Math.floor(Date.now() / 1000) + expires_in;
+        
+        // Update tokens in database
+        await prisma.account.update({
+          where: {
+            id: xeroAccount.id,
+          },
+          data: {
+            access_token,
+            refresh_token,
+            expires_at: expiresAt,
+          },
+        });
+        
+        // Use new access token
+        xeroAccount.access_token = access_token;
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+        return res.status(401).json({ message: 'Xero authentication expired' });
+      }
+    }
+
+    // Get list of tenants (organizations)
+    const tenantsResponse = await axios.get('https://api.xero.com/connections', {
+      headers: {
+        'Authorization': `Bearer ${xeroAccount.access_token}`,
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!tenantsResponse.data || tenantsResponse.data.length === 0) {
+      return res.status(404).json({ message: 'No Xero organizations found' });
+    }
+
+    // Use first tenant ID (most applications just use the first organization)
+    const tenantId = tenantsResponse.data[0].tenantId;
+
+    // Get customers from Xero API
+    const customersResponse = await axios.get('https://api.xero.com/api.xro/2.0/Contacts', {
+      headers: {
+        'Authorization': `Bearer ${xeroAccount.access_token}`,
+        'Accept': 'application/json',
+        'Xero-Tenant-Id': tenantId,
+      },
+    });
+    
+    // Return customer data
+    return res.status(200).json(customersResponse.data);
+  } catch (error) {
+    console.error('Error getting Xero customers:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+};

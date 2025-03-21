@@ -32,3 +32,14 @@ export const disconnectXero = async () => {
     throw error;
   }
 };
+
+// Get Xero customers
+export const getXeroCustomers = async () => {
+  try {
+    const response = await api.get('/api/xero/customers');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting Xero customers:', error);
+    throw error;
+  }
+};
