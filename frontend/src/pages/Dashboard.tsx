@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { checkXeroConnection, initiateXeroAuth } from "@/services/xero";
 import {
   BarChart3,
   Home,
@@ -19,6 +20,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [xeroConnected, setXeroConnected] = useState(false);
+  const [xeroLoading, setXeroLoading] = useState(true);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -27,9 +30,40 @@ const Dashboard = () => {
     }
   }, [user, isLoading, navigate]);
 
+  // Check Xero connection
+  useEffect(() => {
+    const checkXero = async () => {
+      if (!user) return;
+
+      try {
+        setXeroLoading(true);
+        const { connected } = await checkXeroConnection();
+        setXeroConnected(connected);
+      } catch (error) {
+        console.error("Error checking Xero connection:", error);
+      } finally {
+        setXeroLoading(false);
+      }
+    };
+
+    checkXero();
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  const handleConnectXero = async () => {
+    try {
+      const { authUrl } = await initiateXeroAuth();
+      if (authUrl) {
+        // Redirect to Xero authorization page
+        window.location.href = authUrl;
+      }
+    } catch (error) {
+      console.error("Error connecting to Xero:", error);
+    }
   };
 
   if (isLoading) {
@@ -283,36 +317,76 @@ const Dashboard = () => {
                     </svg>
                     Data Sources
                   </h3>
-                  <p className="text-green-600 text-sm">
-                    Connect Xero to import your financial data.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M19.2 4.8H4.8C3.26 4.8 2 6.06 2 7.6V16.4C2 17.94 3.26 19.2 4.8 19.2H19.2C20.74 19.2 22 17.94 22 16.4V7.6C22 6.06 20.74 4.8 19.2 4.8Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M12 12m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Connect Xero
-                  </Button>
+                  {xeroLoading ? (
+                    <div className="flex items-center justify-center py-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-600"></div>
+                      <span className="ml-2 text-green-600 text-sm">
+                        Checking connection...
+                      </span>
+                    </div>
+                  ) : xeroConnected ? (
+                    <div>
+                      <p className="text-green-600 text-sm flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        Connected to Xero
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
+                        onClick={() => navigate("/dashboard/reports")}
+                      >
+                        <FileText size={16} className="mr-2" />
+                        View Financial Reports
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-green-600 text-sm">
+                        Connect Xero to import your financial data.
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
+                        onClick={handleConnectXero}
+                      >
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M19.2 4.8H4.8C3.26 4.8 2 6.06 2 7.6V16.4C2 17.94 3.26 19.2 4.8 19.2H19.2C20.74 19.2 22 17.94 22 16.4V7.6C22 6.06 20.74 4.8 19.2 4.8Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M12 12m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        Connect Xero
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 hover:shadow-md transition-all duration-200">

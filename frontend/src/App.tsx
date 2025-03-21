@@ -10,6 +10,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import AuthCallback from "./pages/auth/AuthCallback";
 import Dashboard from "./pages/Dashboard";
+import XeroCallback from "./pages/dashboard/XeroCallback";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +42,9 @@ function App() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+
+          {/* Xero OAuth callback */}
+          <Route path="/dashboard/xero/callback" element={<XeroCallback />} />
 
           {/* Protected routes */}
           <Route

@@ -9,6 +9,7 @@ import config from './config';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
+import xeroRoutes from './routes/xero.routes';
 
 // Initialize passport
 import './config/passport';
@@ -97,6 +98,7 @@ app.get('/', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/xero', xeroRoutes);
 
 // User routes
 app.get('/api/users', async (req, res) => {
