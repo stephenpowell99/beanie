@@ -156,15 +156,6 @@ const Dashboard = () => {
             </li>
             <li>
               <a
-                href="/dashboard/reports"
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-[#EBF5FF] hover:text-[#3B9EFF] transition-colors"
-              >
-                <BarChart3 className="mr-3 h-5 w-5" />
-                Reports
-              </a>
-            </li>
-            <li>
-              <a
                 href="/dashboard/ai-reports"
                 className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-[#EBF5FF] hover:text-[#3B9EFF] transition-colors"
               >
@@ -289,15 +280,6 @@ const Dashboard = () => {
                   >
                     <Home className="mr-3 h-5 w-5" />
                     Dashboard
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/dashboard/reports"
-                    className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  >
-                    <BarChart3 className="mr-3 h-5 w-5" />
-                    Reports
                   </a>
                 </li>
                 <li>
