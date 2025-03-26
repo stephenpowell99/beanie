@@ -9,6 +9,7 @@ import {
   AskQuestionResponse,
 } from "../services/ai.service";
 import ReportRenderer from "./ReportRenderer";
+import { Copy, Check } from "lucide-react";
 
 interface ReportViewerProps {
   reportId: number;
@@ -57,6 +58,12 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 
   // State for active tab in the right panel
   const [activeTab, setActiveTab] = useState<ActiveTab>("ask"); // Default to 'ask'
+
+  const [copyFeedback, setCopyFeedback] = useState<{
+    originalQuery?: boolean;
+    apiCode?: boolean;
+    renderCode?: boolean;
+  }>({});
 
   useEffect(() => {
     const loadReport = async () => {
@@ -180,6 +187,19 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
     }
   };
 
+  const copyToClipboard = async (
+    text: string,
+    type: "originalQuery" | "apiCode" | "renderCode"
+  ) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFeedback({ [type]: true });
+      setTimeout(() => setCopyFeedback({ [type]: false }), 2000);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -248,25 +268,79 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
         {/* Code View Section (Stays in left column) */}
         {showCode && report && (
           <div className="p-4 border-b bg-gray-50 overflow-y-auto max-h-96">
-            {" "}
-            {/* Limit height */}
-            <div className="mb-4">
-              <h3 className="text-md font-semibold mb-2">Original Query</h3>
-              <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-48 text-sm">
-                {report.query}
-              </pre>
-            </div>
-            <div className="mb-4">
-              <h3 className="text-md font-semibold mb-2">API Code</h3>
-              <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-48 text-sm">
-                {report.apiCode}
-              </pre>
-            </div>
-            <div>
-              <h3 className="text-md font-semibold mb-2">Render Code</h3>
-              <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-48 text-sm">
-                {report.renderCode}
-              </pre>
+            <div className="space-y-4">
+              {/* Original Query */}
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-700">
+                    Original Query
+                  </h3>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(report.query, "originalQuery")
+                    }
+                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    title="Copy query"
+                  >
+                    {copyFeedback.originalQuery ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
+                </div>
+                <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
+                  {report.query}
+                </pre>
+              </div>
+
+              {/* API Code */}
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-700">
+                    API Code
+                  </h3>
+                  <button
+                    onClick={() => copyToClipboard(report.apiCode, "apiCode")}
+                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    title="Copy API code"
+                  >
+                    {copyFeedback.apiCode ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
+                </div>
+                <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
+                  {report.apiCode}
+                </pre>
+              </div>
+
+              {/* Render Code */}
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-700">
+                    Render Code
+                  </h3>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(report.renderCode, "renderCode")
+                    }
+                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    title="Copy render code"
+                  >
+                    {copyFeedback.renderCode ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
+                </div>
+                <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
+                  {report.renderCode}
+                </pre>
+              </div>
             </div>
           </div>
         )}

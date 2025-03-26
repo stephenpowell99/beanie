@@ -1,5 +1,6 @@
 export const promptGuidance:string = `
 * JavaScript code (apiCode) to fetch data from the Xero API.
+** All api calls to Xero must start with https://api.xero.com. Do not use relative paths.
 ** Do not include dependencies on any external libraries. 
 ** Do not call console.warn or console.error. Instead call console.log. 
 ** Be aware that any dates returned by the Xero API will be in Microsoft JSON Date format so make sure the code can handle this.
