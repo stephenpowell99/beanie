@@ -497,4 +497,47 @@ Answer the user's question based on the provided report details and code:`;
     }
     throwApiError('Failed to get answer using AI', 500);
   }
+});
+
+export const saveReportCode = asyncHandler(async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  const { apiCode, renderCode, userId } = req.body;
+
+  if (isNaN(id)) {
+    throwApiError('Invalid report ID', 400);
+  }
+
+  if (isNaN(userId)) {
+    throwApiError('Invalid user ID', 400);
+  }
+
+  if (!apiCode && !renderCode) {
+    throwApiError('At least one code field must be provided', 400);
+  }
+
+  // Check if report exists and belongs to the user
+  const report = await prisma.report.findFirst({
+    where: { 
+      id,
+      userId
+    },
+  });
+
+  if (!report) {
+    throwApiError('Report not found or unauthorized', 404);
+  }
+
+  // Transform the JSX in renderCode if it's being updated
+  const transformedRenderCode = renderCode ? transformJSX(renderCode) : (report as Report).renderCode;
+
+  // Update the report with the new code
+  const updatedReport = await prisma.report.update({
+    where: { id },
+    data: {
+      ...(apiCode && { apiCode }),
+      ...(renderCode && { renderCode: transformedRenderCode }),
+    },
+  });
+
+  return res.status(200).json(updatedReport);
 }); 

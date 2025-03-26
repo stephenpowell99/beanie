@@ -11,7 +11,7 @@ import {
   runReport,
 } from "../services/ai.service";
 import ReportRenderer from "./ReportRenderer";
-import { Copy, Check, Save } from "lucide-react";
+import { Copy, Check, Save, Maximize, Minimize } from "lucide-react";
 
 interface ReportViewerProps {
   reportId: number;
@@ -83,6 +83,14 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [fullscreenPanel, setFullscreenPanel] = useState<{
+    type: "apiCode" | "renderCode" | null;
+    content: string;
+  }>({
+    type: null,
+    content: "",
+  });
 
   useEffect(() => {
     const loadReport = async () => {
@@ -355,6 +363,20 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
                     API Code
                   </h3>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        setFullscreenPanel({
+                          type: "apiCode",
+                          content: isEditing.apiCode
+                            ? editedCode.apiCode
+                            : report.apiCode,
+                        })
+                      }
+                      className="p-1 hover:bg-gray-200 rounded transition-colors"
+                      title="Fullscreen"
+                    >
+                      <Maximize className="h-4 w-4 text-gray-500" />
+                    </button>
                     {isEditing.apiCode ? (
                       <button
                         onClick={() => handleSaveCode("apiCode")}
@@ -424,6 +446,20 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
                     Render Code
                   </h3>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        setFullscreenPanel({
+                          type: "renderCode",
+                          content: isEditing.renderCode
+                            ? editedCode.renderCode
+                            : report.renderCode,
+                        })
+                      }
+                      className="p-1 hover:bg-gray-200 rounded transition-colors"
+                      title="Fullscreen"
+                    >
+                      <Maximize className="h-4 w-4 text-gray-500" />
+                    </button>
                     {isEditing.renderCode ? (
                       <button
                         onClick={() => handleSaveCode("renderCode")}

@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateReport, getUserReports, getReportById, deleteReport, runReport, modifyReport, answerReportQuestion } from '../controllers/ai.controller';
+import { generateReport, getUserReports, getReportById, deleteReport, runReport, modifyReport, answerReportQuestion, saveReportCode } from '../controllers/ai.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router = express.Router();
@@ -30,5 +30,8 @@ router.put('/reports/:id/modify', authenticate as unknown as express.RequestHand
 
 // Ask a question about a report
 router.post('/reports/:id/ask', authenticate as unknown as express.RequestHandler, answerReportQuestion as unknown as express.RequestHandler);
+
+// Save code changes for a report
+router.put('/reports/:id/code', authenticate as unknown as express.RequestHandler, saveReportCode as unknown as express.RequestHandler);
 
 export default router; 
