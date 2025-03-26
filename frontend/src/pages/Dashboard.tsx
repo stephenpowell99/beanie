@@ -122,16 +122,16 @@ const Dashboard = () => {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3B9EFF]"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#EBF5FF]">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
-        <div className="flex h-14 items-center px-4 border-b border-gray-200">
+      <aside className="hidden md:flex w-64 flex-col bg-white border-r border-[#EBF5FF]">
+        <div className="flex h-14 items-center px-4 border-b border-[#EBF5FF]">
           <a href="/" className="flex items-center m-2">
             <img
               src="/images/logo.jpg"
@@ -148,7 +148,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="/dashboard"
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium bg-gray-100 text-gray-900"
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium bg-[#EBF5FF] text-[#3B9EFF]"
               >
                 <Home className="mr-3 h-5 w-5" />
                 Dashboard
@@ -157,7 +157,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="/dashboard/reports"
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-[#EBF5FF] hover:text-[#3B9EFF] transition-colors"
               >
                 <BarChart3 className="mr-3 h-5 w-5" />
                 Reports
@@ -166,7 +166,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="/dashboard/ai-reports"
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-[#EBF5FF] hover:text-[#3B9EFF] transition-colors"
               >
                 <Bot className="mr-3 h-5 w-5" />
                 AI Reports
@@ -175,7 +175,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="/dashboard/documents"
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-[#EBF5FF] hover:text-[#3B9EFF] transition-colors"
               >
                 <FileText className="mr-3 h-5 w-5" />
                 Documents
@@ -184,7 +184,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="/dashboard/settings"
-                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-[#EBF5FF] hover:text-[#3B9EFF] transition-colors"
               >
                 <Settings className="mr-3 h-5 w-5" />
                 Settings
@@ -196,7 +196,7 @@ const Dashboard = () => {
 
       <div className="flex flex-col flex-1">
         {/* Top Navigation */}
-        <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6">
+        <header className="flex h-14 items-center justify-between border-b border-[#EBF5FF] bg-white px-4 md:px-6">
           {/* Mobile Menu Button + Logo */}
           <div className="flex items-center md:hidden">
             <button
@@ -349,34 +349,34 @@ const Dashboard = () => {
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 hover:shadow-md transition-all duration-200">
-                        <h3 className="font-medium text-blue-800 mb-2 flex items-center">
-                          <FileText size={18} className="mr-2 text-blue-600" />
+                      <div className="bg-[#EBF5FF] rounded-lg p-4 border border-[#3B9EFF]/10 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-[#3B9EFF] mb-2 flex items-center">
+                          <FileText size={18} className="mr-2 text-[#3B9EFF]" />
                           Recent Reports
                         </h3>
-                        <p className="text-blue-600 text-sm">
+                        <p className="text-[#3B9EFF] text-sm">
                           No reports created yet. Create your first report!
                         </p>
                         <Button
                           variant="outline"
-                          className="mt-3 w-full text-blue-700 border-blue-200 hover:bg-blue-100"
+                          className="mt-3 w-full text-[#3B9EFF] border-[#3B9EFF]/20 hover:bg-[#3B9EFF]/10"
                         >
                           <FileText size={16} className="mr-2" />
                           Create Report
                         </Button>
                       </div>
 
-                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 hover:shadow-md transition-all duration-200">
-                        <h3 className="font-medium text-purple-800 mb-2 flex items-center">
-                          <Bot size={18} className="mr-2 text-purple-600" />
+                      <div className="bg-[#EBF5FF] rounded-lg p-4 border border-[#3B9EFF]/10 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-[#3B9EFF] mb-2 flex items-center">
+                          <Bot size={18} className="mr-2 text-[#3B9EFF]" />
                           AI-Generated Reports
                         </h3>
-                        <p className="text-purple-600 text-sm">
+                        <p className="text-[#3B9EFF] text-sm">
                           Create custom reports with AI assistance
                         </p>
                         <Button
                           variant="outline"
-                          className="mt-3 w-full text-purple-700 border-purple-200 hover:bg-purple-100"
+                          className="mt-3 w-full text-[#3B9EFF] border-[#3B9EFF]/20 hover:bg-[#3B9EFF]/10"
                           onClick={() => navigate("/dashboard/ai-reports")}
                         >
                           <Bot size={16} className="mr-2" />
@@ -384,10 +384,10 @@ const Dashboard = () => {
                         </Button>
                       </div>
 
-                      <div className="bg-green-50 rounded-lg p-4 border border-green-100 hover:shadow-md transition-all duration-200">
-                        <h3 className="font-medium text-green-800 mb-2 flex items-center">
+                      <div className="bg-[#EBF5FF] rounded-lg p-4 border border-[#3B9EFF]/10 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-[#3B9EFF] mb-2 flex items-center">
                           <svg
-                            className="w-4 h-4 mr-2 text-green-600"
+                            className="w-4 h-4 mr-2 text-[#3B9EFF]"
                             viewBox="0 0 24 24"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -411,14 +411,14 @@ const Dashboard = () => {
                         </h3>
                         {xeroLoading ? (
                           <div className="flex items-center justify-center py-2">
-                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-600"></div>
-                            <span className="ml-2 text-green-600 text-sm">
+                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-[#3B9EFF]"></div>
+                            <span className="ml-2 text-[#3B9EFF] text-sm">
                               Checking connection...
                             </span>
                           </div>
                         ) : xeroConnected ? (
                           <div>
-                            <p className="text-green-600 text-sm flex items-center">
+                            <p className="text-[#3B9EFF] text-sm flex items-center">
                               <svg
                                 className="w-4 h-4 mr-1"
                                 fill="none"
@@ -438,7 +438,7 @@ const Dashboard = () => {
                             <div className="flex flex-col space-y-2 mt-3">
                               <Button
                                 variant="outline"
-                                className="w-full text-green-700 border-green-200 hover:bg-green-100"
+                                className="w-full text-[#3B9EFF] border-[#3B9EFF]/20 hover:bg-[#3B9EFF]/10"
                                 onClick={() => navigate("/dashboard/reports")}
                               >
                                 <FileText size={16} className="mr-2" />
@@ -463,12 +463,12 @@ const Dashboard = () => {
                           </div>
                         ) : (
                           <div>
-                            <p className="text-green-600 text-sm">
+                            <p className="text-[#3B9EFF] text-sm">
                               Connect Xero to import your financial data.
                             </p>
                             <Button
                               variant="outline"
-                              className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
+                              className="mt-3 w-full text-[#3B9EFF] border-[#3B9EFF]/20 hover:bg-[#3B9EFF]/10"
                               onClick={handleConnectXero}
                             >
                               <svg
@@ -498,10 +498,10 @@ const Dashboard = () => {
                         )}
                       </div>
 
-                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 hover:shadow-md transition-all duration-200">
-                        <h3 className="font-medium text-purple-800 mb-2 flex items-center">
+                      <div className="bg-[#EBF5FF] rounded-lg p-4 border border-[#3B9EFF]/10 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-[#3B9EFF] mb-2 flex items-center">
                           <svg
-                            className="w-4 h-4 mr-2 text-purple-600"
+                            className="w-4 h-4 mr-2 text-[#3B9EFF]"
                             viewBox="0 0 24 24"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -516,12 +516,12 @@ const Dashboard = () => {
                           </svg>
                           Insights
                         </h3>
-                        <p className="text-purple-600 text-sm">
+                        <p className="text-[#3B9EFF] text-sm">
                           Get AI-powered insights about your finances.
                         </p>
                         <Button
                           variant="outline"
-                          className="mt-3 w-full text-purple-700 border-purple-200 hover:bg-purple-100"
+                          className="mt-3 w-full text-[#3B9EFF] border-[#3B9EFF]/20 hover:bg-[#3B9EFF]/10"
                         >
                           <svg
                             className="w-4 h-4 mr-2"

@@ -22,7 +22,7 @@ const HomePage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Navigation Bar */}
-      <header className="w-full bg-white py-4 px-4 border-b border-gray-200 sticky top-0 z-50">
+      <header className="w-full bg-white py-4 px-4 border-b border-[#EBF5FF] sticky top-0 z-50">
         <div className="container max-w-6xl mx-auto">
           <div className="flex justify-between items-center">
             {/* Logo */}
@@ -44,19 +44,19 @@ const HomePage = () => {
             <nav className="hidden md:flex items-center space-x-8">
               <a
                 href="#features"
-                className="text-gray-600 hover:text-gray-900 font-medium"
+                className="text-gray-700 hover:text-[#3B9EFF] font-medium transition-colors"
               >
                 Features
               </a>
               <a
                 href="#how-it-works"
-                className="text-gray-600 hover:text-gray-900 font-medium"
+                className="text-gray-700 hover:text-[#3B9EFF] font-medium transition-colors"
               >
                 How It Works
               </a>
               <a
                 href="#pricing"
-                className="text-gray-600 hover:text-gray-900 font-medium"
+                className="text-gray-700 hover:text-[#3B9EFF] font-medium transition-colors"
               >
                 Pricing
               </a>
@@ -69,7 +69,7 @@ const HomePage = () => {
                     <Link to="/dashboard">
                       <Button
                         size="sm"
-                        className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
+                        className="bg-[#3B9EFF] hover:bg-[#1B7FDF] text-white font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
                       >
                         Dashboard
                       </Button>
@@ -77,7 +77,7 @@ const HomePage = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="font-medium"
+                      className="font-medium text-gray-700 hover:text-[#3B9EFF] hover:bg-[#EBF5FF]"
                       onClick={logout}
                     >
                       Log Out
@@ -97,7 +97,7 @@ const HomePage = () => {
                     <Link to="/auth/register">
                       <Button
                         size="sm"
-                        className="bg-gray-800 hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
+                        className="bg-[#3B9EFF] hover:bg-[#1B7FDF] text-white font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
                       >
                         Register
                       </Button>
@@ -194,17 +194,17 @@ const HomePage = () => {
       )}
 
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center px-4 py-20 md:py-32 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section className="flex flex-col items-center justify-center px-4 py-20 md:py-32 bg-gradient-to-br from-white to-[#EBF5FF]">
         <div className="container max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
             <div className="flex-1 space-y-6">
-              <div className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+              <div className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-[#EBF5FF] text-[#3B9EFF]">
                 <Sparkles size={14} className="mr-1.5" />
                 AI-Powered Financial Reporting
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
                 Transform your Xero data into
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-orange-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#3B9EFF] to-[#1B7FDF]">
                   {" "}
                   actionable insights
                 </span>
@@ -216,7 +216,7 @@ const HomePage = () => {
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 {isAuthenticated ? (
                   <Button
-                    className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-6 rounded-lg text-lg font-medium"
+                    className="bg-[#3B9EFF] hover:bg-[#1B7FDF] text-white px-6 py-6 rounded-lg text-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
                     onClick={() => navigate("/dashboard")}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
@@ -233,7 +233,7 @@ const HomePage = () => {
                   </Button>
                 ) : (
                   <Button
-                    className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-6 rounded-lg text-lg font-medium"
+                    className="bg-[#3B9EFF] hover:bg-[#1B7FDF] text-white px-6 py-6 rounded-lg text-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
                     onClick={() => navigate("/auth/register")}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
@@ -292,9 +292,9 @@ const HomePage = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-gray-50 rounded-xl p-8 border border-gray-100 transition-all duration-300 hover:shadow-md">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-5">
-                <Brain className="text-blue-600" size={24} />
+            <div className="bg-[#EBF5FF] rounded-xl p-8 border border-[#3B9EFF]/10 transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 bg-[#3B9EFF]/10 rounded-lg flex items-center justify-center mb-5">
+                <Brain className="text-[#3B9EFF]" size={24} />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">
                 AI-Powered Prompts
@@ -306,9 +306,9 @@ const HomePage = () => {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-gray-50 rounded-xl p-8 border border-gray-100 transition-all duration-300 hover:shadow-md">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-5">
-                <BarChart3 className="text-orange-600" size={24} />
+            <div className="bg-[#EBF5FF] rounded-xl p-8 border border-[#3B9EFF]/10 transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 bg-[#3B9EFF]/10 rounded-lg flex items-center justify-center mb-5">
+                <BarChart3 className="text-[#3B9EFF]" size={24} />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">
                 Custom Dashboards
@@ -320,9 +320,9 @@ const HomePage = () => {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-gray-50 rounded-xl p-8 border border-gray-100 transition-all duration-300 hover:shadow-md">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-5">
-                <FileText className="text-blue-600" size={24} />
+            <div className="bg-[#EBF5FF] rounded-xl p-8 border border-[#3B9EFF]/10 transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 bg-[#3B9EFF]/10 rounded-lg flex items-center justify-center mb-5">
+                <FileText className="text-[#3B9EFF]" size={24} />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">
                 Seamless Xero Integration
@@ -339,7 +339,7 @@ const HomePage = () => {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="py-20 px-4 bg-gradient-to-br from-gray-800 to-gray-900 text-white"
+        className="py-20 px-4 bg-gradient-to-br from-[#3B9EFF] to-[#1B7FDF] text-white"
       >
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -353,8 +353,8 @@ const HomePage = () => {
 
           <div className="grid md:grid-cols-3 gap-6 relative">
             {/* Step 1 */}
-            <div className="bg-gray-700/50 rounded-xl p-8 backdrop-blur-sm border border-gray-700">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold mb-6">
+            <div className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-white/20">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#3B9EFF] font-bold mb-6">
                 1
               </div>
               <h3 className="text-xl font-semibold mb-3">
@@ -367,8 +367,8 @@ const HomePage = () => {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-gray-700/50 rounded-xl p-8 backdrop-blur-sm border border-gray-700">
-              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold mb-6">
+            <div className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-white/20">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#3B9EFF] font-bold mb-6">
                 2
               </div>
               <h3 className="text-xl font-semibold mb-3">
@@ -381,8 +381,8 @@ const HomePage = () => {
             </div>
 
             {/* Step 3 */}
-            <div className="bg-gray-700/50 rounded-xl p-8 backdrop-blur-sm border border-gray-700">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold mb-6">
+            <div className="bg-white/10 rounded-xl p-8 backdrop-blur-sm border border-white/20">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#3B9EFF] font-bold mb-6">
                 3
               </div>
               <h3 className="text-xl font-semibold mb-3">
@@ -400,8 +400,8 @@ const HomePage = () => {
       {/* CTA Section */}
       <section id="pricing" className="py-20 px-4 bg-white">
         <div className="container max-w-6xl mx-auto">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-12 relative overflow-hidden border border-gray-200">
-            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-bl from-blue-500/10 to-orange-500/10 backdrop-blur-sm"></div>
+          <div className="bg-gradient-to-r from-[#EBF5FF] to-white rounded-2xl p-12 relative overflow-hidden border border-[#3B9EFF]/10">
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-bl from-[#3B9EFF]/10 to-transparent backdrop-blur-sm"></div>
 
             <div className="max-w-2xl relative">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
@@ -412,7 +412,7 @@ const HomePage = () => {
                 financial dashboards and make data-driven decisions.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-6 rounded-lg text-lg font-medium">
+                <Button className="bg-[#3B9EFF] hover:bg-[#1B7FDF] text-white px-6 py-6 rounded-lg text-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-md">
                   Start Free Trial
                 </Button>
                 <Button
@@ -428,7 +428,7 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 px-4 bg-gray-100 mt-auto">
+      <footer className="py-10 px-4 bg-[#EBF5FF] mt-auto">
         <div className="container max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-6 md:mb-0">
