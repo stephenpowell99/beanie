@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import {
 } from "@/services/xero";
 import XeroFinancialChart from "@/components/XeroFinancialChart";
 import TopInvoicedCustomers from "@/components/TopInvoicedCustomers";
+import AiReports from "./dashboard/AiReports";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   BarChart3,
   Home,
@@ -24,6 +26,7 @@ import {
   Users,
   Loader2,
   Unlink,
+  Bot,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -129,11 +132,10 @@ const Dashboard = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
         <div className="flex h-14 items-center px-4 border-b border-gray-200">
-          <a href="/" className="flex items-center">
+          <a href="/" className="flex items-center m-2">
             <img
               src="/images/logo.jpg"
               alt="beanie.ai"
-              className="h-8 w-auto"
               onError={(e) => {
                 e.currentTarget.src =
                   "https://placehold.co/120x40/f8fafc/475569?text=beanie.ai";
@@ -159,6 +161,15 @@ const Dashboard = () => {
               >
                 <BarChart3 className="mr-3 h-5 w-5" />
                 Reports
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/ai-reports"
+                className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              >
+                <Bot className="mr-3 h-5 w-5" />
+                AI Reports
               </a>
             </li>
             <li>
@@ -291,6 +302,15 @@ const Dashboard = () => {
                 </li>
                 <li>
                   <a
+                    href="/dashboard/ai-reports"
+                    className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  >
+                    <Bot className="mr-3 h-5 w-5" />
+                    AI Reports
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="/dashboard/documents"
                     className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   >
@@ -315,279 +335,316 @@ const Dashboard = () => {
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Welcome, {user?.name || "User"}!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                This is your Beanie dashboard where you can manage your
-                financial data and reporting.
-              </p>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4">
+                      Welcome, {user?.name || "User"}!
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      This is your Beanie dashboard where you can manage your
+                      financial data and reporting.
+                    </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 hover:shadow-md transition-all duration-200">
-                  <h3 className="font-medium text-blue-800 mb-2 flex items-center">
-                    <FileText size={18} className="mr-2 text-blue-600" />
-                    Recent Reports
-                  </h3>
-                  <p className="text-blue-600 text-sm">
-                    No reports created yet. Create your first report!
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-3 w-full text-blue-700 border-blue-200 hover:bg-blue-100"
-                  >
-                    <FileText size={16} className="mr-2" />
-                    Create Report
-                  </Button>
-                </div>
-
-                <div className="bg-green-50 rounded-lg p-4 border border-green-100 hover:shadow-md transition-all duration-200">
-                  <h3 className="font-medium text-green-800 mb-2 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-green-600"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M19.2 4.8H4.8C3.26 4.8 2 6.06 2 7.6V16.4C2 17.94 3.26 19.2 4.8 19.2H19.2C20.74 19.2 22 17.94 22 16.4V7.6C22 6.06 20.74 4.8 19.2 4.8Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M12 12m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Data Sources
-                  </h3>
-                  {xeroLoading ? (
-                    <div className="flex items-center justify-center py-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-green-600 text-sm">
-                        Checking connection...
-                      </span>
-                    </div>
-                  ) : xeroConnected ? (
-                    <div>
-                      <p className="text-green-600 text-sm flex items-center">
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        Connected to Xero
-                      </p>
-                      <div className="flex flex-col space-y-2 mt-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-blue-800 mb-2 flex items-center">
+                          <FileText size={18} className="mr-2 text-blue-600" />
+                          Recent Reports
+                        </h3>
+                        <p className="text-blue-600 text-sm">
+                          No reports created yet. Create your first report!
+                        </p>
                         <Button
                           variant="outline"
-                          className="w-full text-green-700 border-green-200 hover:bg-green-100"
-                          onClick={() => navigate("/dashboard/reports")}
+                          className="mt-3 w-full text-blue-700 border-blue-200 hover:bg-blue-100"
                         >
                           <FileText size={16} className="mr-2" />
-                          View Financial Reports
+                          Create Report
                         </Button>
+                      </div>
+
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-purple-800 mb-2 flex items-center">
+                          <Bot size={18} className="mr-2 text-purple-600" />
+                          AI-Generated Reports
+                        </h3>
+                        <p className="text-purple-600 text-sm">
+                          Create custom reports with AI assistance
+                        </p>
                         <Button
                           variant="outline"
-                          className="w-full text-red-700 border-red-200 hover:bg-red-100"
-                          onClick={handleDisconnectXero}
-                          disabled={disconnectingXero}
+                          className="mt-3 w-full text-purple-700 border-purple-200 hover:bg-purple-100"
+                          onClick={() => navigate("/dashboard/ai-reports")}
                         >
-                          {disconnectingXero ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Unlink size={16} className="mr-2" />
-                          )}
-                          {disconnectingXero
-                            ? "Disconnecting..."
-                            : "Disconnect Xero"}
+                          <Bot size={16} className="mr-2" />
+                          Create AI Report
+                        </Button>
+                      </div>
+
+                      <div className="bg-green-50 rounded-lg p-4 border border-green-100 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-green-800 mb-2 flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-2 text-green-600"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M19.2 4.8H4.8C3.26 4.8 2 6.06 2 7.6V16.4C2 17.94 3.26 19.2 4.8 19.2H19.2C20.74 19.2 22 17.94 22 16.4V7.6C22 6.06 20.74 4.8 19.2 4.8Z"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 12m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          Data Sources
+                        </h3>
+                        {xeroLoading ? (
+                          <div className="flex items-center justify-center py-2">
+                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-green-600"></div>
+                            <span className="ml-2 text-green-600 text-sm">
+                              Checking connection...
+                            </span>
+                          </div>
+                        ) : xeroConnected ? (
+                          <div>
+                            <p className="text-green-600 text-sm flex items-center">
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Connected to Xero
+                            </p>
+                            <div className="flex flex-col space-y-2 mt-3">
+                              <Button
+                                variant="outline"
+                                className="w-full text-green-700 border-green-200 hover:bg-green-100"
+                                onClick={() => navigate("/dashboard/reports")}
+                              >
+                                <FileText size={16} className="mr-2" />
+                                View Financial Reports
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="w-full text-red-700 border-red-200 hover:bg-red-100"
+                                onClick={handleDisconnectXero}
+                                disabled={disconnectingXero}
+                              >
+                                {disconnectingXero ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Unlink size={16} className="mr-2" />
+                                )}
+                                {disconnectingXero
+                                  ? "Disconnecting..."
+                                  : "Disconnect Xero"}
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-green-600 text-sm">
+                              Connect Xero to import your financial data.
+                            </p>
+                            <Button
+                              variant="outline"
+                              className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
+                              onClick={handleConnectXero}
+                            >
+                              <svg
+                                className="w-4 h-4 mr-2"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M19.2 4.8H4.8C3.26 4.8 2 6.06 2 7.6V16.4C2 17.94 3.26 19.2 4.8 19.2H19.2C20.74 19.2 22 17.94 22 16.4V7.6C22 6.06 20.74 4.8 19.2 4.8Z"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M12 12m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              Connect Xero
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 hover:shadow-md transition-all duration-200">
+                        <h3 className="font-medium text-purple-800 mb-2 flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-2 text-purple-600"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12 6V2M12 22v-4M6 12H2m20 0h-4m1.07-6.36L17 7.71m-10 8.58L5 18.29m12-10.58L19.07 5.64M5 5.64L7.07 7.71"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          Insights
+                        </h3>
+                        <p className="text-purple-600 text-sm">
+                          Get AI-powered insights about your finances.
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="mt-3 w-full text-purple-700 border-purple-200 hover:bg-purple-100"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12 6V2M12 22v-4M6 12H2m20 0h-4m1.07-6.36L17 7.71m-10 8.58L5 18.29m12-10.58L19.07 5.64M5 5.64L7.07 7.71"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          Generate Insights
                         </Button>
                       </div>
                     </div>
-                  ) : (
-                    <div>
-                      <p className="text-green-600 text-sm">
-                        Connect Xero to import your financial data.
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="mt-3 w-full text-green-700 border-green-200 hover:bg-green-100"
-                        onClick={handleConnectXero}
-                      >
-                        <svg
-                          className="w-4 h-4 mr-2"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M19.2 4.8H4.8C3.26 4.8 2 6.06 2 7.6V16.4C2 17.94 3.26 19.2 4.8 19.2H19.2C20.74 19.2 22 17.94 22 16.4V7.6C22 6.06 20.74 4.8 19.2 4.8Z"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M12 12m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        Connect Xero
-                      </Button>
-                    </div>
-                  )}
-                </div>
 
-                <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 hover:shadow-md transition-all duration-200">
-                  <h3 className="font-medium text-purple-800 mb-2 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-purple-600"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 6V2M12 22v-4M6 12H2m20 0h-4m1.07-6.36L17 7.71m-10 8.58L5 18.29m12-10.58L19.07 5.64M5 5.64L7.07 7.71"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Insights
-                  </h3>
-                  <p className="text-purple-600 text-sm">
-                    Get AI-powered insights about your finances.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-3 w-full text-purple-700 border-purple-200 hover:bg-purple-100"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 6V2M12 22v-4M6 12H2m20 0h-4m1.07-6.36L17 7.71m-10 8.58L5 18.29m12-10.58L19.07 5.64M5 5.64L7.07 7.71"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Generate Insights
-                  </Button>
-                </div>
-              </div>
+                    {/* Xero Customers Section - Only shown when connected to Xero */}
+                    {xeroConnected && (
+                      <div className="mt-8">
+                        <div className="flex items-center justify-between mb-6">
+                          <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                            <Users className="h-5 w-5 mr-2 text-blue-600" />
+                            Your Xero Customers
+                          </h2>
+                        </div>
 
-              {/* Xero Customers Section - Only shown when connected to Xero */}
-              {xeroConnected && (
-                <div className="mt-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                      <Users className="h-5 w-5 mr-2 text-blue-600" />
-                      Your Xero Customers
-                    </h2>
-                  </div>
-
-                  {isLoadingCustomers ? (
-                    <div className="flex justify-center py-10">
-                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                      <span className="ml-2 text-gray-500">
-                        Loading customers...
-                      </span>
-                    </div>
-                  ) : xeroCustomers.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {xeroCustomers.slice(0, 6).map((customer: any) => {
-                        console.log("Customer object:", customer);
-                        console.log("Customer name property:", customer.Name);
-                        console.log(
-                          "Available properties:",
-                          Object.keys(customer)
-                        );
-                        return (
-                          <Card
-                            key={customer.ContactID}
-                            className="hover:shadow-md transition-shadow"
-                          >
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-lg flex items-center">
-                                <Users className="h-5 w-5 mr-2 text-blue-600" />
-                                {customer.Name}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-sm text-gray-500">
-                                {customer.EmailAddress && (
-                                  <div className="mb-1">
-                                    Email: {customer.EmailAddress}
-                                  </div>
-                                )}
-                                {customer.Phones &&
-                                  customer.Phones.length > 0 &&
-                                  customer.Phones[0].PhoneNumber && (
-                                    <div className="mb-1">
-                                      Phone: {customer.Phones[0].PhoneNumber}
+                        {isLoadingCustomers ? (
+                          <div className="flex justify-center py-10">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                            <span className="ml-2 text-gray-500">
+                              Loading customers...
+                            </span>
+                          </div>
+                        ) : xeroCustomers.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {xeroCustomers.slice(0, 6).map((customer: any) => {
+                              console.log("Customer object:", customer);
+                              console.log(
+                                "Customer name property:",
+                                customer.Name
+                              );
+                              console.log(
+                                "Available properties:",
+                                Object.keys(customer)
+                              );
+                              return (
+                                <Card
+                                  key={customer.ContactID}
+                                  className="hover:shadow-md transition-shadow"
+                                >
+                                  <CardHeader className="pb-2">
+                                    <CardTitle className="text-lg flex items-center">
+                                      <Users className="h-5 w-5 mr-2 text-blue-600" />
+                                      {customer.Name}
+                                    </CardTitle>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="text-sm text-gray-500">
+                                      {customer.EmailAddress && (
+                                        <div className="mb-1">
+                                          Email: {customer.EmailAddress}
+                                        </div>
+                                      )}
+                                      {customer.Phones &&
+                                        customer.Phones.length > 0 &&
+                                        customer.Phones[0].PhoneNumber && (
+                                          <div className="mb-1">
+                                            Phone:{" "}
+                                            {customer.Phones[0].PhoneNumber}
+                                          </div>
+                                        )}
+                                      {customer.Addresses &&
+                                        customer.Addresses.length > 0 && (
+                                          <div className="mb-1">
+                                            {customer.Addresses[0].City}
+                                            {customer.Addresses[0].Region
+                                              ? `, ${customer.Addresses[0].Region}`
+                                              : ""}
+                                          </div>
+                                        )}
                                     </div>
-                                  )}
-                                {customer.Addresses &&
-                                  customer.Addresses.length > 0 && (
-                                    <div className="mb-1">
-                                      {customer.Addresses[0].City}
-                                      {customer.Addresses[0].Region
-                                        ? `, ${customer.Addresses[0].Region}`
-                                        : ""}
-                                    </div>
-                                  )}
-                              </div>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <Card className="bg-gray-50">
+                            <CardContent className="flex flex-col items-center justify-center py-10">
+                              <Users className="h-12 w-12 text-gray-400 mb-4" />
+                              <p className="text-gray-600 text-center mb-2">
+                                No customers found in your Xero account
+                              </p>
+                              <p className="text-gray-500 text-sm text-center">
+                                Add customers in Xero to see them here
+                              </p>
                             </CardContent>
                           </Card>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <Card className="bg-gray-50">
-                      <CardContent className="flex flex-col items-center justify-center py-10">
-                        <Users className="h-12 w-12 text-gray-400 mb-4" />
-                        <p className="text-gray-600 text-center mb-2">
-                          No customers found in your Xero account
-                        </p>
-                        <p className="text-gray-500 text-sm text-center">
-                          Add customers in Xero to see them here
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              )}
+                        )}
+                      </div>
+                    )}
 
-              {/* Xero Financial Chart - Only shown when connected to Xero */}
-              {xeroConnected && <XeroFinancialChart />}
+                    {/* Xero Financial Chart - Only shown when connected to Xero */}
+                    {xeroConnected && <XeroFinancialChart />}
 
-              {/* Top Invoiced Customers - Only shown when connected to Xero */}
-              {xeroConnected && <TopInvoicedCustomers />}
-            </div>
+                    {/* Top Invoiced Customers - Only shown when connected to Xero */}
+                    {xeroConnected && <TopInvoicedCustomers />}
+                  </div>
+                }
+              />
+              <Route
+                path="/ai-reports"
+                element={
+                  <ErrorBoundary>
+                    <AiReports userId={user?.id || 0} />
+                  </ErrorBoundary>
+                }
+              />
+            </Routes>
           </div>
         </main>
       </div>

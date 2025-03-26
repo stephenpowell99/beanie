@@ -6,10 +6,12 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import prisma from './prisma';
 import config from './config';
+import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
 import xeroRoutes from './routes/xero.routes';
+import aiRoutes from './routes/ai.routes';
 
 // Initialize passport
 import './config/passport';
@@ -99,6 +101,7 @@ app.get('/', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/xero', xeroRoutes);
+app.use('/api/ai', aiRoutes);
 
 // User routes
 app.get('/api/users', async (req, res) => {
@@ -115,11 +118,8 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal server error' });
-});
+// Global error handler
+app.use(errorHandler);
 
 // Start the server
 app.listen(port, () => {

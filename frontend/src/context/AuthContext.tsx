@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
             // Get current user
-            const response = await api.get("/api/auth/me");
+            const response = await api.get("/auth/me");
             setUser(response.data.user);
           }
         }
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     setError(null);
     try {
-      const response = await api.post("/api/auth/login", {
+      const response = await api.post("/auth/login", {
         email,
         password,
       });
@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, name: string) => {
     setError(null);
     try {
-      const response = await api.post("/api/auth/register", {
+      const response = await api.post("/auth/register", {
         email,
         password,
         name,

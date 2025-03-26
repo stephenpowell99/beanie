@@ -14,15 +14,37 @@ router.post('/register', auth_controller_1.register);
 router.post('/login', auth_controller_1.login);
 // Google OAuth routes - Only set up if credentials exist
 if (config_1.default.google.clientID && config_1.default.google.clientSecret) {
-    router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
-    router.get('/google/callback', passport_1.default.authenticate('google', { session: false, failureRedirect: '/login' }), auth_controller_1.googleCallback);
+    router.get('/google', (req, res, next) => {
+        const state = req.query.state;
+        const authOptions = {
+            scope: ['profile', 'email'],
+            state: state || undefined
+        };
+        passport_1.default.authenticate('google', authOptions)(req, res, next);
+    });
+    router.get('/google/callback', passport_1.default.authenticate('google', {
+        session: false,
+        failureRedirect: '/login',
+        // Pass through the state parameter
+        passReqToCallback: true
+    }), auth_controller_1.googleCallback);
 }
 // Microsoft OAuth routes - Only set up if credentials exist
 if (config_1.default.microsoft.clientID && config_1.default.microsoft.clientSecret) {
-    router.get('/microsoft', passport_1.default.authenticate('microsoft', {
-        scope: ['user.read']
-    }));
-    router.get('/microsoft/callback', passport_1.default.authenticate('microsoft', { session: false, failureRedirect: '/login' }), auth_controller_1.microsoftCallback);
+    router.get('/microsoft', (req, res, next) => {
+        const state = req.query.state;
+        const authOptions = {
+            scope: ['user.read'],
+            state: state || undefined
+        };
+        passport_1.default.authenticate('microsoft', authOptions)(req, res, next);
+    });
+    router.get('/microsoft/callback', passport_1.default.authenticate('microsoft', {
+        session: false,
+        failureRedirect: '/login',
+        // Pass through the state parameter
+        passReqToCallback: true
+    }), auth_controller_1.microsoftCallback);
 }
 // Protected routes
 router.get('/me', auth_middleware_1.authenticate, auth_controller_1.getCurrentUser);

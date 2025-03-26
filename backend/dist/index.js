@@ -22,6 +22,8 @@ const prisma_1 = __importDefault(require("./prisma"));
 const config_1 = __importDefault(require("./config"));
 // Import routes
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const xero_routes_1 = __importDefault(require("./routes/xero.routes"));
+const ai_routes_1 = __importDefault(require("./routes/ai.routes"));
 // Initialize passport
 require("./config/passport");
 // Initialize environment variables
@@ -29,26 +31,46 @@ dotenv_1.default.config();
 // Initialize Express app
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
+// Get CORS allowed origins from environment variable or default to an array
+const getAllowedOrigins = () => {
+    const originsFromEnv = process.env.CORS_ORIGINS;
+    const defaultOrigins = [
+        'https://beanie-six.vercel.app',
+        'https://beanie.vercel.app',
+        'http://localhost:5173', // Vite default port
+        'http://localhost:3000', // Another common frontend port
+    ];
+    if (originsFromEnv) {
+        return originsFromEnv.split(',');
+    }
+    return defaultOrigins;
+};
 // CORS configuration
-const allowedOrigins = [
-    'https://beanie-six.vercel.app',
-    'http://localhost:5173', // Vite default port
-    'http://localhost:3000', // Another common frontend port
-];
+const allowedOrigins = getAllowedOrigins();
+console.log('CORS allowed origins:', allowedOrigins);
+console.log('Current NODE_ENV:', process.env.NODE_ENV);
+console.log('Frontend URL:', process.env.FRONTEND_URL);
 // CORS middleware
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
+        console.log('Request origin:', origin);
         // Allow requests with no origin (like mobile apps, curl requests)
-        if (!origin)
+        if (!origin) {
+            console.log('No origin, allowing request');
             return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+        }
+        if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+            console.log('Origin allowed by CORS:', origin);
             callback(null, true);
         }
         else {
+            console.log('Origin rejected by CORS:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 // Body parsers
 app.use(express_1.default.json());
@@ -75,6 +97,8 @@ app.get('/', (req, res) => {
 });
 // API routes
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/xero', xero_routes_1.default);
+app.use('/api/ai', ai_routes_1.default);
 // User routes
 app.get('/api/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

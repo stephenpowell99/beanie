@@ -25,6 +25,7 @@ model User {
   sessions         Session[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  reports          Report[]
 }
 
 // OAuth accounts for social login (Google, Microsoft)
@@ -55,6 +56,24 @@ model Session {
   userId       Int
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// Model for AI-generated reports
+model Report {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?
+  query        String   // The original chat query
+  apiCode      String   @db.Text  // Generated Xero API code
+  renderCode   String   @db.Text  // Generated chart/list render code
+  userId       Int      // User who created the report
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  data         String   @db.Text  @default("{}")  // Store report data as JSON string
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
 }

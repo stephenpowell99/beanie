@@ -84,17 +84,23 @@ exports.login = login;
 const googleCallback = (req, res) => {
     try {
         const user = req.user;
+        // Get the state parameter for the original URL
+        const state = req.query.state;
+        const frontendURL = state || process.env.FRONTEND_URL || 'https://beanie-six.vercel.app';
+        console.log('Google OAuth callback. State:', state, 'Frontend URL:', frontendURL);
         if (!user) {
-            return res.redirect(`${process.env.FRONTEND_URL}/login?error=Authentication failed`);
+            return res.redirect(`${frontendURL}/auth/login?error=Authentication failed`);
         }
         // Generate token
         const token = (0, auth_1.generateToken)((0, auth_1.excludePassword)(user));
         // Redirect to frontend with token
-        return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+        return res.redirect(`${frontendURL}/auth/callback?token=${token}`);
     }
     catch (error) {
         console.error('Google OAuth callback error:', error);
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=Authentication failed`);
+        const state = req.query.state;
+        const frontendURL = state || process.env.FRONTEND_URL || 'https://beanie-six.vercel.app';
+        return res.redirect(`${frontendURL}/auth/login?error=Authentication failed`);
     }
 };
 exports.googleCallback = googleCallback;
@@ -102,17 +108,23 @@ exports.googleCallback = googleCallback;
 const microsoftCallback = (req, res) => {
     try {
         const user = req.user;
+        // Get the state parameter for the original URL
+        const state = req.query.state;
+        const frontendURL = state || process.env.FRONTEND_URL || 'https://beanie-six.vercel.app';
+        console.log('Microsoft OAuth callback. State:', state, 'Frontend URL:', frontendURL);
         if (!user) {
-            return res.redirect(`${process.env.FRONTEND_URL}/login?error=Authentication failed`);
+            return res.redirect(`${frontendURL}/auth/login?error=Authentication failed`);
         }
         // Generate token
         const token = (0, auth_1.generateToken)((0, auth_1.excludePassword)(user));
         // Redirect to frontend with token
-        return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+        return res.redirect(`${frontendURL}/auth/callback?token=${token}`);
     }
     catch (error) {
         console.error('Microsoft OAuth callback error:', error);
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=Authentication failed`);
+        const state = req.query.state;
+        const frontendURL = state || process.env.FRONTEND_URL || 'https://beanie-six.vercel.app';
+        return res.redirect(`${frontendURL}/auth/login?error=Authentication failed`);
     }
 };
 exports.microsoftCallback = microsoftCallback;

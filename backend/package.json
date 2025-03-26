@@ -18,6 +18,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.18.0",
+    "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-react-jsx": "^7.25.9",
+    "@babel/preset-react": "^7.26.3",
+    "@google/generative-ai": "^0.24.0",
     "@prisma/client": "^4.16.2",
     "@types/cors": "^2.8.17",
     "@types/node": "^20.11.23",
@@ -34,9 +39,11 @@
     "passport-microsoft": "^2.1.0",
     "prisma": "^4.16.2",
     "typescript": "^5.3.3",
+    "vm2": "^3.9.19",
     "xero-node": "^10.0.0"
   },
   "devDependencies": {
+    "@types/babel__core": "^7.20.5",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.1",

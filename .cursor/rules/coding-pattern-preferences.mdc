@@ -23,3 +23,4 @@ alwaysApply: true
 – Never add stubbing or fake data patterns to code that affects the dev or prod environments  
 – Never overwrite my .env file without first asking and confirming
 - Only do any mocking in relation to testing
+- REMEMBER that the VITE_API_URL environment variable\.env setting includes /api at the end so do not include it at the start of any calls to the api from the frontend
