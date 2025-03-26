@@ -32,36 +32,3 @@ export const disconnectXero = async () => {
     throw error;
   }
 };
-
-// Get Xero customers
-export const getXeroCustomers = async () => {
-  try {
-    const response = await api.get('/xero/customers');
-    return response.data;
-  } catch (error) {
-    console.error('Error getting Xero customers:', error);
-    throw error;
-  }
-};
-
-// Get Xero monthly financial data
-export const getXeroMonthlyFinancials = async () => {
-  try {
-    const response = await api.get('/xero/monthly-financials');
-    return response.data;
-  } catch (error) {
-    console.error('Error getting Xero monthly financials:', error);
-    throw error;
-  }
-};
-
-// Get top 5 customers by invoice amount
-export const getTopInvoicedCustomers = async () => {
-  try {
-    const response = await api.get('/xero/top-invoiced-customers');
-    return response.data;
-  } catch (error) {
-    console.error('Error getting top invoiced customers:', error);
-    throw error;
-  }
-};
