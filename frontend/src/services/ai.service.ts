@@ -274,4 +274,32 @@ export const askQuestionAboutReport = async (
     // Note: We don't expect a "needsMoreInfo" response here, but handleApiError will catch other issues.
     return handleApiError(error);
   }
+};
+
+export const saveReportCode = async (
+  reportId: number,
+  apiCode: string,
+  renderCode: string,
+  userId: number
+): Promise<Report> => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await axios.put(
+      `${API_URL}/ai/reports/${reportId}/code`,
+      { apiCode, renderCode, userId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data as Report;
+  } catch (error) {
+    return handleApiError(error);
+  }
 }; 
