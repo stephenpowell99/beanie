@@ -61,10 +61,16 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
   useEffect(() => {
     const loadReport = async () => {
       try {
+        setIsLoading(true); // Ensure loading state is true at the start
+        setError(null);
+        setReportData(null); // Clear previous data
+        setExecutionError(null);
         const data = await getReportById(reportId);
         setReport(data);
+        // Automatically execute the report after loading
+        await executeReport();
       } catch (err) {
-        setError("Failed to load report");
+        setError("Failed to load or execute report");
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -136,6 +142,8 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
         // Clear report data as the code has changed
         setReportData(null);
         setExecutionError(null);
+        // Automatically execute the report after successful modification
+        await executeReport();
       }
     } catch (err: any) {
       console.error("Error modifying report:", err);
