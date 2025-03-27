@@ -183,6 +183,19 @@ export const executeApiCode = async (apiCode: string, req: Request) => {
     return result;
   } catch (error: any) {
     console.error('Code execution service error:', error);
-    return { error: error.message || 'Failed to execute report code' };
+    return { 
+      error: error.message || 'Failed to execute report code',
+      stack: error.stack,
+      details: {
+        name: error.name,
+        cause: error.cause,
+        // Include sandbox context if available
+        sandboxContext: error.vm ? {
+          lineNumber: error.vm.lineNumber,
+          columnNumber: error.vm.columnNumber,
+          sourceFragment: error.vm.sourceFragment
+        } : undefined
+      }
+    };
   }
 }; 

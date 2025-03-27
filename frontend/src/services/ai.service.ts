@@ -59,8 +59,26 @@ export const handleApiError = (error: unknown): never => {
     // Log detailed error in development
     console.error('API Error:', apiError);
     
-    // Throw a user-friendly error with the same message
-    throw new Error(apiError.message || 'An unexpected error occurred');
+    // Construct a more detailed error message
+    let errorMessage = apiError.message || 'An unexpected error occurred';
+    if (apiError.details) {
+      // Add relevant details to the error message
+      if (apiError.details.reportName) {
+        errorMessage += `\nReport: ${apiError.details.reportName}`;
+      }
+      if (apiError.details.sandboxContext) {
+        const ctx = apiError.details.sandboxContext;
+        errorMessage += `\nError at line ${ctx.lineNumber}, column ${ctx.columnNumber}`;
+        if (ctx.sourceFragment) {
+          errorMessage += `\nCode: ${ctx.sourceFragment}`;
+        }
+      }
+      if (apiError.details.cause) {
+        errorMessage += `\nCause: ${apiError.details.cause}`;
+      }
+    }
+    
+    throw new Error(errorMessage);
   }
   
   // For non-axios errors or if the error structure is different

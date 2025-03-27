@@ -283,13 +283,12 @@ export const runReport = asyncHandler(async (req: Request, res: Response) => {
   
   // Check for execution errors
   if (result.error) {
-    console.error(`Error executing report: ${result.error}`);
-    if (result.stack) {
-      console.error(`Error stack: ${result.stack}`);
-    }
+    console.error(`Error executing report:`, result);
     throwApiError(`Error executing report: ${result.error}`, 500, { 
       reportId,
-      stack: result.stack 
+      reportName: report!.name,
+      stack: result.stack,
+      details: result.details
     });
   }
   
