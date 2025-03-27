@@ -5,6 +5,7 @@ export const promptGuidance:string = `
 ** Do not call console.warn or console.error. Instead call console.log. 
 ** Be aware that any dates returned by the Xero API will be in Microsoft JSON Date format so make sure the code can handle this.
 ** Any time you are calling the Xero Reports/ProfitAndLoss API endpoint, the actual Section Titles will be 'Income' not 'Revenue', 'Less Cost of Sales' not 'Expenses', 'Less Operating Expenses' not 'Expenses'
+** Make sure if you are calling the Xero API and passing a periods parameter that it is a number between 1 and 11.
 
 * React code (renderCode) using ApexCharts to visualize the data. 
 ** Do not include any import statements.

@@ -37,6 +37,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
   const [isExecuting, setIsExecuting] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeCodeTab, setActiveCodeTab] = useState<
+    "originalQuery" | "apiCode" | "renderCode"
+  >("originalQuery");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [reportData, setReportData] = useState<any | null>(null);
   const [executionError, setExecutionError] = useState<string | null>(null);
@@ -328,204 +331,250 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
           </div>
         </div>
         {/* Code View Section (Stays in left column) */}
-        {showCode && report && (
+        {showCode && (
           <div className="p-4 border-b bg-gray-50 overflow-y-auto max-h-96">
+            {/* Tab Navigation */}
+            <div className="flex border-b mb-4">
+              <button
+                onClick={() => setActiveCodeTab("originalQuery")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  activeCodeTab === "originalQuery"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Original Query
+              </button>
+              <button
+                onClick={() => setActiveCodeTab("apiCode")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  activeCodeTab === "apiCode"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                API Code
+              </button>
+              <button
+                onClick={() => setActiveCodeTab("renderCode")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  activeCodeTab === "renderCode"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Render Code
+              </button>
+            </div>
+
+            {/* Tab Content */}
             <div className="space-y-4">
-              {/* Original Query */}
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-700">
-                    Original Query
-                  </h3>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(report.query, "originalQuery")
-                    }
-                    className="p-1 hover:bg-gray-200 rounded transition-colors"
-                    title="Copy query"
-                  >
-                    {copyFeedback.originalQuery ? (
-                      <Check className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <Copy className="h-4 w-4 text-gray-500" />
-                    )}
-                  </button>
-                </div>
-                <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
-                  {report.query}
-                </pre>
-              </div>
-
-              {/* API Code */}
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-700">
-                    API Code
-                  </h3>
-                  <div className="flex items-center gap-2">
+              {/* Original Query Tab */}
+              {activeCodeTab === "originalQuery" && (
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-700">
+                      Original Query
+                    </h3>
                     <button
                       onClick={() =>
-                        setFullscreenPanel({
-                          type: "apiCode",
-                          content: isEditing.apiCode
-                            ? editedCode.apiCode
-                            : report.apiCode,
-                        })
+                        copyToClipboard(report.query, "originalQuery")
                       }
                       className="p-1 hover:bg-gray-200 rounded transition-colors"
-                      title="Fullscreen"
+                      title="Copy query"
                     >
-                      <Maximize className="h-4 w-4 text-gray-500" />
-                    </button>
-                    {isEditing.apiCode ? (
-                      <button
-                        onClick={() => handleSaveCode("apiCode")}
-                        disabled={isSaving}
-                        className="p-1 hover:bg-gray-200 rounded transition-colors"
-                        title="Save changes"
-                      >
-                        <Save className="h-4 w-4 text-green-500" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() =>
-                          setIsEditing({ ...isEditing, apiCode: true })
-                        }
-                        className="p-1 hover:bg-gray-200 rounded transition-colors"
-                        title="Edit code"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-gray-500"
-                        >
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => copyToClipboard(report.apiCode, "apiCode")}
-                      className="p-1 hover:bg-gray-200 rounded transition-colors"
-                      title="Copy API code"
-                    >
-                      {copyFeedback.apiCode ? (
+                      {copyFeedback.originalQuery ? (
                         <Check className="h-4 w-4 text-green-500" />
                       ) : (
                         <Copy className="h-4 w-4 text-gray-500" />
                       )}
                     </button>
                   </div>
-                </div>
-                {isEditing.apiCode ? (
-                  <textarea
-                    value={editedCode.apiCode}
-                    onChange={(e) =>
-                      setEditedCode({ ...editedCode, apiCode: e.target.value })
-                    }
-                    className="w-full h-48 p-3 bg-white rounded border text-sm font-mono"
-                  />
-                ) : (
                   <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
-                    {report.apiCode}
+                    {report.query}
                   </pre>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Render Code */}
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-700">
-                    Render Code
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        setFullscreenPanel({
-                          type: "renderCode",
-                          content: isEditing.renderCode
-                            ? editedCode.renderCode
-                            : report.renderCode,
-                        })
-                      }
-                      className="p-1 hover:bg-gray-200 rounded transition-colors"
-                      title="Fullscreen"
-                    >
-                      <Maximize className="h-4 w-4 text-gray-500" />
-                    </button>
-                    {isEditing.renderCode ? (
-                      <button
-                        onClick={() => handleSaveCode("renderCode")}
-                        disabled={isSaving}
-                        className="p-1 hover:bg-gray-200 rounded transition-colors"
-                        title="Save changes"
-                      >
-                        <Save className="h-4 w-4 text-green-500" />
-                      </button>
-                    ) : (
+              {/* API Code Tab */}
+              {activeCodeTab === "apiCode" && (
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-700">
+                      API Code
+                    </h3>
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() =>
-                          setIsEditing({ ...isEditing, renderCode: true })
+                          setFullscreenPanel({
+                            type: "apiCode",
+                            content: isEditing.apiCode
+                              ? editedCode.apiCode
+                              : report.apiCode,
+                          })
                         }
                         className="p-1 hover:bg-gray-200 rounded transition-colors"
-                        title="Edit code"
+                        title="Fullscreen"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-gray-500"
-                        >
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
+                        <Maximize className="h-4 w-4 text-gray-500" />
                       </button>
-                    )}
-                    <button
-                      onClick={() =>
-                        copyToClipboard(report.renderCode, "renderCode")
-                      }
-                      className="p-1 hover:bg-gray-200 rounded transition-colors"
-                      title="Copy render code"
-                    >
-                      {copyFeedback.renderCode ? (
-                        <Check className="h-4 w-4 text-green-500" />
+                      {isEditing.apiCode ? (
+                        <button
+                          onClick={() => handleSaveCode("apiCode")}
+                          disabled={isSaving}
+                          className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          title="Save changes"
+                        >
+                          <Save className="h-4 w-4 text-green-500" />
+                        </button>
                       ) : (
-                        <Copy className="h-4 w-4 text-gray-500" />
+                        <button
+                          onClick={() =>
+                            setIsEditing({ ...isEditing, apiCode: true })
+                          }
+                          className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          title="Edit code"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-gray-500"
+                          >
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
                       )}
-                    </button>
+                      <button
+                        onClick={() =>
+                          copyToClipboard(report.apiCode, "apiCode")
+                        }
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                        title="Copy API code"
+                      >
+                        {copyFeedback.apiCode ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Copy className="h-4 w-4 text-gray-500" />
+                        )}
+                      </button>
+                    </div>
                   </div>
+                  {isEditing.apiCode ? (
+                    <textarea
+                      value={editedCode.apiCode}
+                      onChange={(e) =>
+                        setEditedCode({
+                          ...editedCode,
+                          apiCode: e.target.value,
+                        })
+                      }
+                      className="w-full h-48 p-3 bg-white rounded border text-sm font-mono"
+                    />
+                  ) : (
+                    <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
+                      {report.apiCode}
+                    </pre>
+                  )}
                 </div>
-                {isEditing.renderCode ? (
-                  <textarea
-                    value={editedCode.renderCode}
-                    onChange={(e) =>
-                      setEditedCode({
-                        ...editedCode,
-                        renderCode: e.target.value,
-                      })
-                    }
-                    className="w-full h-48 p-3 bg-white rounded border text-sm font-mono"
-                  />
-                ) : (
-                  <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
-                    {report.renderCode}
-                  </pre>
-                )}
-              </div>
+              )}
+
+              {/* Render Code Tab */}
+              {activeCodeTab === "renderCode" && (
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-700">
+                      Render Code
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          setFullscreenPanel({
+                            type: "renderCode",
+                            content: isEditing.renderCode
+                              ? editedCode.renderCode
+                              : report.renderCode,
+                          })
+                        }
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                        title="Fullscreen"
+                      >
+                        <Maximize className="h-4 w-4 text-gray-500" />
+                      </button>
+                      {isEditing.renderCode ? (
+                        <button
+                          onClick={() => handleSaveCode("renderCode")}
+                          disabled={isSaving}
+                          className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          title="Save changes"
+                        >
+                          <Save className="h-4 w-4 text-green-500" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            setIsEditing({ ...isEditing, renderCode: true })
+                          }
+                          className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          title="Edit code"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-gray-500"
+                          >
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        onClick={() =>
+                          copyToClipboard(report.renderCode, "renderCode")
+                        }
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                        title="Copy render code"
+                      >
+                        {copyFeedback.renderCode ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Copy className="h-4 w-4 text-gray-500" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {isEditing.renderCode ? (
+                    <textarea
+                      value={editedCode.renderCode}
+                      onChange={(e) =>
+                        setEditedCode({
+                          ...editedCode,
+                          renderCode: e.target.value,
+                        })
+                      }
+                      className="w-full h-48 p-3 bg-white rounded border text-sm font-mono"
+                    />
+                  ) : (
+                    <pre className="bg-white p-3 rounded border text-sm overflow-x-auto">
+                      {report.renderCode}
+                    </pre>
+                  )}
+                </div>
+              )}
 
               {saveError && (
                 <div className="mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
