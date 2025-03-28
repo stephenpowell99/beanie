@@ -10,6 +10,8 @@ interface AiChatProps {
   onReportGenerated: (reportId: number) => void;
 }
 
+type AIModel = "gemini" | "claude";
+
 const AiChat: React.FC<AiChatProps> = ({ userId, onReportGenerated }) => {
   const [messages, setMessages] = useState<
     { role: "user" | "assistant"; content: string }[]
@@ -22,6 +24,7 @@ const AiChat: React.FC<AiChatProps> = ({ userId, onReportGenerated }) => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<AIModel>("gemini");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -47,8 +50,8 @@ const AiChat: React.FC<AiChatProps> = ({ userId, onReportGenerated }) => {
       // Add temporary loading message
       setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
 
-      // Generate report
-      const response = await generateReport(input, userId);
+      // Generate report with selected model
+      const response = await generateReport(input, userId, selectedModel);
 
       // If this is a "needs more info" response from the AI
       if (response && "needsMoreInfo" in response && response.needsMoreInfo) {
@@ -141,22 +144,38 @@ const AiChat: React.FC<AiChatProps> = ({ userId, onReportGenerated }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe the report you want to create..."
-            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Generating..." : "Generate"}
-          </button>
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center space-x-4">
+            <label className="text-sm font-medium text-gray-700">
+              AI Model:
+            </label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value as AIModel)}
+              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              disabled={isLoading}
+            >
+              <option value="gemini">Gemini</option>
+              <option value="claude">Claude</option>
+            </select>
+          </div>
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Describe the report you want to create..."
+              className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Generating..." : "Generate"}
+            </button>
+          </div>
         </div>
       </form>
     </div>

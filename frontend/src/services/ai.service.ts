@@ -86,21 +86,24 @@ export const handleApiError = (error: unknown): never => {
   throw new Error('An unexpected error occurred');
 };
 
-export const generateReport = async (query: string, userId: number): Promise<Report | NeedsMoreInfoResponse> => {
+export const generateReport = async (
+  query: string, 
+  userId: number,
+  model: 'gemini' | 'claude' = 'gemini'
+): Promise<Report | NeedsMoreInfoResponse> => {
   const token = localStorage.getItem('token');
   
   if (!token) {
     throw new Error('Authentication required');
   }
   
-  // Make sure we don't have double 'api' in the URL
   const endpoint = `${API_URL}/ai/reports`;
-  console.log(`Making API request to: ${endpoint} with userId: ${userId}`);
+  console.log(`Making API request to: ${endpoint} with userId: ${userId} and model: ${model}`);
   
   try {
     const response = await axios.post(
       endpoint,
-      { query, userId },
+      { query, userId, model },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -110,12 +113,10 @@ export const generateReport = async (query: string, userId: number): Promise<Rep
     
     console.log('API Response:', response);
     
-    // Check if this is a "needs more info" response
     if (response.data.needsMoreInfo) {
       return response.data as NeedsMoreInfoResponse;
     }
     
-    // Otherwise return the report
     return response.data as Report;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400 && error.response.data.needsMoreInfo) {
@@ -222,7 +223,8 @@ export const runReport = async (reportId: number): Promise<ReportResult> => {
 export const modifyReport = async (
   reportId: number,
   requestText: string,
-  userId: number
+  userId: number,
+  model: 'gemini' | 'claude' = 'gemini'
 ): Promise<Report | NeedsMoreInfoResponse> => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -230,12 +232,12 @@ export const modifyReport = async (
   }
 
   const endpoint = `${API_URL}/ai/reports/${reportId}/modify`;
-  console.log(`Making API request to modify report: ${endpoint}`);
+  console.log(`Making API request to modify report: ${endpoint} with model: ${model}`);
 
   try {
     const response = await axios.put(
       endpoint,
-      { requestText, userId },
+      { requestText, userId, model },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -243,20 +245,15 @@ export const modifyReport = async (
       }
     );
 
-    // Check if this is a "needs more info" response (returned with status 200 or similar by backend now)
-    // Or handle based on status code if backend returns 400 for needsMoreInfo
     if (response.data.needsMoreInfo) {
        return response.data as NeedsMoreInfoResponse;
     }
 
-    // Otherwise return the updated report
     return response.data as Report;
   } catch (error) {
-     // Handle the 400 "needs more info" case specifically for modifications
      if (axios.isAxiosError(error) && error.response?.status === 400 && error.response.data.needsMoreInfo) {
        return error.response.data as NeedsMoreInfoResponse;
      }
-    // Use the general error handler for other errors
     return handleApiError(error);
   }
 };

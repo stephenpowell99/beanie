@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { Anthropic } from '@anthropic-ai/sdk';
 import prisma from '../prisma';
 import { asyncHandler, throwApiError } from '../middleware/errorHandler.middleware';
 import { executeApiCode } from '../services/codeExecution.service';
@@ -9,6 +10,11 @@ import { promptGuidance } from '../utils/promptHelpers';
 
 // Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+
+// Initialize Anthropic
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+});
 
 // Specify the model requested by the user
 // Note: Ensure this exact model name is available and supported.
@@ -39,8 +45,8 @@ const safetySettings = [
   },
 ];
 
-// Get the model instance
-const model = genAI.getGenerativeModel({
+// Get the Gemini model instance
+const geminiModel = genAI.getGenerativeModel({
   model: modelName,
   generationConfig,
   safetySettings
@@ -69,8 +75,8 @@ const extractCode = (text: string, lang: 'javascript' | 'jsx'): string | null =>
 
 export const generateReport = asyncHandler(async (req: Request, res: Response) => {
   console.log('generateReport endpoint hit');
-  const { query, userId } = req.body;
-  console.log('Request body:', { query, userId });
+  const { query, userId, model = 'gemini' } = req.body;
+  console.log('Request body:', { query, userId, model });
 
   if (!query) {
     throwApiError('Query is required', 400);
@@ -85,35 +91,52 @@ export const generateReport = asyncHandler(async (req: Request, res: Response) =
     throwApiError('User not found', 404);
   }
 
-  // Prepare the prompt for Gemini
-  // Combine system instructions and user query into a single prompt structure
+  // Prepare the prompt
   const systemInstructions = `You are a helpful assistant that generates JavaScript code to create dashboard reports based on user queries about Xero API data.
 Your task is to generate two code snippets:
 
-${promptGuidance} 
-
-`;
+${promptGuidance}`;
 
   const combinedPrompt = `${systemInstructions}\n\nUser Query: ${query}`;
 
+  console.log('Combined Prompt:', combinedPrompt);
+
   try {
-    console.log(`Sending request to Gemini model: ${modelName}`);
-    // Use generateContent with the combined prompt and JSON output config
-    const result = await model.generateContent(combinedPrompt);
-    const response = result.response;
-
-    // Since we requested JSON output, parse the text directly
-    const responseText = response.text();
-    console.log("Raw Gemini Response Text:", responseText); // Log raw response for debugging
-
     let reportData;
-    try {
-      reportData = JSON.parse(responseText);
-    } catch (parseError) {
+    
+    if (model === 'claude') {
+      console.log('Using Claude model');
+      const result = await anthropic.messages.create({
+        model: 'claude-3-7-sonnet-20250219',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: combinedPrompt
+        }],
+        temperature: 0.1,
+        system: 'You are a helpful assistant that generates JavaScript code to create dashboard reports based on user queries about Xero API data. Always respond with valid JSON.',
+      });
+
+      try {
+        reportData = JSON.parse(result.content[0].text);
+      } catch (parseError) {
+        console.error("Failed to parse Claude JSON response:", result.content[0].text, parseError);
+        throwApiError('Failed to parse AI response', 500);
+      }
+    } else {
+      console.log('Using Gemini model');
+      const result = await geminiModel.generateContent(combinedPrompt);
+      const response = result.response;
+      const responseText = response.text();
+      console.log("Raw Gemini Response Text:", responseText);
+
+      try {
+        reportData = JSON.parse(responseText);
+      } catch (parseError) {
         console.error("Failed to parse Gemini JSON response:", responseText, parseError);
         throwApiError('Failed to parse AI response', 500);
+      }
     }
-
 
     if (reportData.needsMoreInfo) {
       return res.status(400).json(reportData);
@@ -121,8 +144,8 @@ ${promptGuidance}
 
     // Validate the structure of the successful response
     if (!reportData.name || !reportData.description || !reportData.apiCode || !reportData.renderCode) {
-        console.error("Gemini response missing required fields:", reportData);
-        throwApiError('AI response was incomplete or malformed', 500);
+      console.error("AI response missing required fields:", reportData);
+      throwApiError('AI response was incomplete or malformed', 500);
     }
 
     // Transform the JSX in renderCode
@@ -137,20 +160,18 @@ ${promptGuidance}
         apiCode: reportData.apiCode,
         renderCode: reportData.renderCode,
         userId: userId,
-        data: JSON.stringify({}), // Store empty object as string
+        data: JSON.stringify({}),
       },
     });
 
     res.json(report);
   } catch (error) {
-    console.error('Error generating report with Gemini:', error);
-     // Check if it's an API error we already threw
+    console.error('Error generating report:', error);
     if (error instanceof Error && (error as any).statusCode) {
-        throw error; // Re-throw known API errors
+      throw error;
     }
-    // Check for potential safety blocks from Gemini
     if (error instanceof Error && error.message.includes('SAFETY')) {
-       throwApiError('AI request blocked due to safety settings.', 400);
+      throwApiError('AI request blocked due to safety settings.', 400);
     }
     throwApiError('Failed to generate report using AI', 500);
   }
@@ -307,7 +328,7 @@ export const runReport = asyncHandler(async (req: Request, res: Response) => {
 
 export const modifyReport = asyncHandler(async (req: Request, res: Response) => {
   const reportId = parseInt(req.params.id);
-  const { requestText, userId } = req.body;
+  const { requestText, userId, model = 'gemini' } = req.body;
 
   if (isNaN(reportId)) {
     throwApiError('Invalid report ID', 400);
@@ -328,12 +349,12 @@ export const modifyReport = asyncHandler(async (req: Request, res: Response) => 
     throwApiError('Report not found', 404);
   }
 
-  // Ensure the user owns the report (optional but recommended)
+  // Ensure the user owns the report
   if (existingReport!.userId !== userId) {
     throwApiError('Forbidden: You do not own this report', 403);
   }
 
-  // Prepare the prompt for Gemini modification
+  // Prepare the prompt for modification
   const systemInstructions = `You are a helpful assistant that modifies existing dashboard report code based on user requests.
 You will be given the original user query, the current API code, the current render code, and a new user request for modification.
 Your task is to update the API code and/or Render code based on the user's request. Keep the overall structure and functionality unless the request specifically asks for major changes.
@@ -357,23 +378,41 @@ ${existingReport!.renderCode}
 User Modification Request: ${requestText}`;
 
   try {
-    console.log(`Sending modification request to Gemini model: ${modelName}`);
-    // Use generateContent with the combined prompt and JSON output config
-    const result = await model.generateContent(modificationPrompt);
-    const response = result.response;
-
-    // Since we requested JSON output, parse the text directly
-    const responseText = response.text();
-    console.log("Raw Gemini Modification Response Text:", responseText); // Log raw response
-
     let reportData;
-     try {
-      reportData = JSON.parse(responseText);
-    } catch (parseError) {
+    
+    if (model === 'claude') {
+      console.log('Using Claude model for modification');
+      const result = await anthropic.messages.create({
+        model: 'claude-3-7-sonnet-20250219',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: modificationPrompt
+        }],
+        temperature: 0.1,
+        system: 'You are a helpful assistant that modifies existing dashboard report code based on user requests. Always respond with valid JSON.',
+      });
+
+      try {
+        reportData = JSON.parse(result.content[0].text);
+      } catch (parseError) {
+        console.error("Failed to parse Claude JSON modification response:", result.content[0].text, parseError);
+        throwApiError('Failed to parse AI modification response', 500);
+      }
+    } else {
+      console.log('Using Gemini model for modification');
+      const result = await geminiModel.generateContent(modificationPrompt);
+      const response = result.response;
+      const responseText = response.text();
+      console.log("Raw Gemini Modification Response Text:", responseText);
+
+      try {
+        reportData = JSON.parse(responseText);
+      } catch (parseError) {
         console.error("Failed to parse Gemini JSON modification response:", responseText, parseError);
         throwApiError('Failed to parse AI modification response', 500);
+      }
     }
-
 
     if (reportData.needsMoreInfo) {
       return res.status(400).json(reportData);
@@ -381,8 +420,8 @@ User Modification Request: ${requestText}`;
 
     // Validate the structure of the successful response
     if (!reportData.name || !reportData.description || !reportData.apiCode || !reportData.renderCode) {
-        console.error("Gemini modification response missing required fields:", reportData);
-        throwApiError('AI modification response was incomplete or malformed', 500);
+      console.error("AI modification response missing required fields:", reportData);
+      throwApiError('AI modification response was incomplete or malformed', 500);
     }
 
     // Transform the JSX in renderCode
@@ -402,14 +441,12 @@ User Modification Request: ${requestText}`;
 
     res.json(updatedReport);
   } catch (error) {
-    console.error('Error modifying report with Gemini:', error);
-    // Check if it's an API error we already threw
+    console.error('Error modifying report:', error);
     if (error instanceof Error && (error as any).statusCode) {
-        throw error; // Re-throw known API errors
+      throw error;
     }
-     // Check for potential safety blocks from Gemini
     if (error instanceof Error && error.message.includes('SAFETY')) {
-       throwApiError('AI request blocked due to safety settings.', 400);
+      throwApiError('AI request blocked due to safety settings.', 400);
     }
     throwApiError('Failed to modify report using AI', 500);
   }

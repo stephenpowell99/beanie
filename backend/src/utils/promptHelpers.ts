@@ -1,11 +1,13 @@
 export const promptGuidance:string = `
 * JavaScript code (apiCode) to fetch data from the Xero API.
 ** All api calls to Xero must start with https://api.xero.com. Do not use relative paths.
+** IMPORTANT:Make sure you use v2.0 of the Xero API and check that you are using the correct format based on the online documentation
 ** Do not include dependencies on any external libraries. 
 ** Do not call console.warn or console.error. Instead call console.log. 
 ** Be aware that any dates returned by the Xero API will be in Microsoft JSON Date format so make sure the code can handle this.
 ** Any time you are calling the Xero Reports/ProfitAndLoss API endpoint, the actual Section Titles will be 'Income' not 'Revenue', 'Less Cost of Sales' not 'Expenses', 'Less Operating Expenses' not 'Expenses'
-** Make sure if you are calling the Xero API and passing a periods parameter that it is a number between 1 and 11.
+** If calling the Reports/ProfitAndLoss API endpoint and you are passing a startDate and endDate, make sure you DO NOT pass a periods parameter
+** If you are using the ProfitAndLoss report, please lookup example formats from https://developer.xero.com/documentation/api/accounting/reports#profit-and-loss
 
 * React code (renderCode) using ApexCharts to visualize the data. 
 ** Do not include any import statements.

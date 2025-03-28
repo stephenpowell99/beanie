@@ -157,9 +157,9 @@ export const executeApiCode = async (apiCode: string, req: Request) => {
             return { error: 'Invalid report result: must return an object' };
           }
           
-          if (!Array.isArray(result.data)) {
-            return { error: 'Invalid report result: data must be an array' };
-          }
+          //if (!Array.isArray(result.data)) {
+           // return { error: 'Invalid report result: data must be an array' };
+         // }
           
           return result;
         } catch (error) {

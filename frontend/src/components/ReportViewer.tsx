@@ -53,6 +53,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
   const [modificationNeedsInfo, setModificationNeedsInfo] = useState<
     string[] | null
   >(null);
+  const [selectedModel, setSelectedModel] = useState<"gemini" | "claude">(
+    "gemini"
+  );
 
   // State for asking questions
   const [questionText, setQuestionText] = useState("");
@@ -163,13 +166,14 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
     setModificationError(null);
     setModificationNeedsInfo(null);
     setExecutionError(null); // Clear previous execution errors
-    setReportData(null); // Clear previous report output
+    setReportData(null);
 
     try {
       const response = await modifyReport(
         report.id,
         modificationRequest,
-        userId
+        userId,
+        selectedModel
       );
 
       if ("needsMoreInfo" in response && response.needsMoreInfo) {
@@ -184,7 +188,6 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
         setReport(response as Report);
         setModificationRequest(""); // Clear input field
         setShowCode(true); // Optionally show the updated code
-        // Maybe add a success message state?
         console.log("Report modified successfully:", response);
         // Clear report data as the code has changed
         setReportData(null);
@@ -721,7 +724,6 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
           {/* Modify Report Tab Content */}
           {activeTab === "modify" && report && (
             <div>
-              {/* Moved Modify Report content here */}
               <h3 className="text-md font-semibold mb-2">Request Changes</h3>
               {modificationError && (
                 <div
@@ -731,26 +733,51 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
                       : "bg-red-100 border border-red-400 text-red-700"
                   }`}
                 >
-                  ...
+                  {modificationError}
+                  {modificationNeedsInfo && (
+                    <ul className="mt-2 list-disc list-inside">
+                      {modificationNeedsInfo.map((info, index) => (
+                        <li key={index}>{info}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               <form onSubmit={handleModifyReport}>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={modificationRequest}
-                    onChange={(e) => setModificationRequest(e.target.value)}
-                    placeholder="e.g., Change to a bar chart"
-                    className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={isModifying}
-                  />
-                  <button
-                    type="submit"
-                    disabled={isModifying || !modificationRequest.trim()}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isModifying ? "Modifying..." : "Request"}
-                  </button>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <label className="text-sm font-medium text-gray-700">
+                      AI Model:
+                    </label>
+                    <select
+                      value={selectedModel}
+                      onChange={(e) =>
+                        setSelectedModel(e.target.value as "gemini" | "claude")
+                      }
+                      className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      disabled={isModifying}
+                    >
+                      <option value="gemini">Gemini</option>
+                      <option value="claude">Claude</option>
+                    </select>
+                  </div>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={modificationRequest}
+                      onChange={(e) => setModificationRequest(e.target.value)}
+                      placeholder="e.g., Change to a bar chart"
+                      className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isModifying}
+                    />
+                    <button
+                      type="submit"
+                      disabled={isModifying || !modificationRequest.trim()}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isModifying ? "Modifying..." : "Request"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
